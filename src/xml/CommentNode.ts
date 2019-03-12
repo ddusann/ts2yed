@@ -24,18 +24,25 @@
  */
 
 import AbstractNode from './AbstractNode';
-import CommentNode from './CommentNode';
+import xmlbuilder from 'xmlbuilder';
 
-export default class Node extends AbstractNode {
-    addComment(comment: string): AbstractNode {
-        const newNode = new CommentNode(comment);
-        this._children.push(newNode);
-        return newNode;
+export default class CommentNode extends AbstractNode {
+    constructor(comment: string) {
+        super('');
+        this.setValue(comment);
     }
 
-    addNode(tagName: string): AbstractNode {
-        const newNode = new Node(tagName);
-        this._children.push(newNode);
-        return newNode;
+    addComment(): AbstractNode {
+        throw new Error('Comment node can\'t have child nodes!');
+    }
+
+    addNode(): AbstractNode {
+        throw new Error('Comment node can\'t have child nodes!');
+    }
+
+    protected _getElement(parent: xmlbuilder.XMLElementOrXMLNode): xmlbuilder.XMLElementOrXMLNode {
+        const xmlElement = parent.com(this._value || '');
+        this._generateChildren(xmlElement);
+        return xmlElement;
     }
 }
