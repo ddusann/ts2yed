@@ -1,0 +1,49 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "arrow-parens": [true, "ban-single-arg-parens"],
+        "array-type": [true, "array"],
+        "indent": [true, "spaces", 4],
+        "member-access": [true, "no-public"],
+        "member-ordering": [true, {
+            "order": [
+                "public-static-field",
+                "protected-static-field",
+                "private-static-field",
+                "public-static-method",
+                "protected-static-method",
+                "private-static-method",
+                "public-instance-field",
+                "protected-instance-field",
+                "private-instance-field",
+                "public-constructor",
+                "private-constructor",
+                "public-instance-method",
+                "protected-instance-method",
+                "private-instance-method"
+              ],
+              "alphabetize": true
+        }],
+        "no-shadowed-variable": [true, {
+            "temporalDeadZone": false
+        }],
+        "object-literal-sort-keys": [false],
+        "ordered-imports": [false],
+        "quotemark": [true, "single"],
+        "trailing-comma": [true, {
+            "multiline": "never",
+            "singleline": "never"
+        }],
+        "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"]
+    },
+    "rulesDirectory": [
+        "node_modules/tslint-eslint-rules/dist/rules"
+    ],
+    "linterOptions": {
+        "exclude": ["node_modules/**/*", "**/*.test.ts"]
+    }
+}

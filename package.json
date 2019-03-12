@@ -4,14 +4,16 @@
   "description": "Create UML diagram from typescript files",
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node index.ts",
+    "start": "ts-node index.ts --strict",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Dušan Kováčik",
   "license": "MIT",
   "dependencies": {
+    "@types/xmlbuilder": "0.0.34",
     "ts-node": "8.0.3",
-    "typescript": "3.3.3333"
+    "typescript": "3.3.3333",
+    "xmlbuilder": "11.0.0"
   },
   "devDependencies": {
     "jest": "24.5.0",
