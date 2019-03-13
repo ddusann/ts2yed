@@ -27,14 +27,42 @@ import Node from './Node';
 import fs from 'fs';
 import xmlbuilder from 'xmlbuilder';
 
+interface IDocumentAttributes {
+    [key: string]: string;
+}
+
 export default class Document extends Node {
-    save(filepath: string): void {
-        const file = this._getElement().end({ pretty: true });
-        fs.writeFileSync(filepath, file, { encoding: 'utf-8' });
+    private _encoding: string;
+    private _standalone: boolean;
+    private _version: string;
+
+    constructor(tagName: string, version: string = '1.0', encoding: string = 'UTF-8', standalone: boolean = false) {
+        super(tagName);
+        this._version = version;
+        this._encoding = encoding;
+        this._standalone = standalone;
+    }
+
+    save(filepath: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const file = this._getElement().end({ pretty: true });
+            fs.writeFile(filepath, file, { encoding: 'utf-8' }, (err => {
+                if (err) {
+                    reject(new Error(err.message));
+                    return;
+                }
+
+                resolve();
+            }));
+        });
     }
 
     protected _getElement(): xmlbuilder.XMLElementOrXMLNode {
-        const xmlElement = xmlbuilder.create(this._tagName, this._getAttributes());
+        const xmlElement = xmlbuilder.create(this._tagName).dec(this._version, this._encoding, this._standalone);
+        const attributes = this._getAttributes();
+        Object.keys(attributes).forEach(key => {
+            xmlElement.attribute(key, attributes[key]);
+        });
         this._generateChildren(xmlElement);
         return xmlElement;
     }
