@@ -1,5 +1,5 @@
-import Node from '../xml/Node';
+import AbstractNode from '../xml/AbstractNode';
 
 export default interface INode {
-    getNode(): Node;
+    generateNode(parent: AbstractNode): AbstractNode;
 }
