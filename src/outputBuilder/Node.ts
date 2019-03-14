@@ -24,15 +24,24 @@
  */
 
 import AbstractNode from '../xml/AbstractNode';
+import Attribute from './Attribute';
 import ElementDescriptions from './ElementDescriptions';
 import INode from '../common/INode';
 import IdGenerator from './IdGenerator';
 
 export default class Node implements INode {
+    private _attributes: Attribute[];
     private _id: string;
+    private _name: string;
 
-    constructor() {
+    constructor(name: string) {
         this._id = IdGenerator.get('n');
+        this._attributes = [];
+        this._name = name;
+    }
+
+    addAttribute(attribute: Attribute): void {
+        this._attributes.push(attribute);
     }
 
     generateNode(parent: AbstractNode): AbstractNode {
@@ -54,7 +63,7 @@ export default class Node implements INode {
             .setAttribute('omitDetails', 'false')
             .setAttribute('stereotype', '')
             .setAttribute('use3DEffect', 'true');
-        umlContent.addNode('y:AttributeLabel').setValue('attribute');
+        umlContent.addNode('y:AttributeLabel').setValue(this._attributes.map(attr => attr.getLabel()).join('\n'));
         umlContent.addNode('y:MethodLabel');
 
         return umlContent;
@@ -63,8 +72,8 @@ export default class Node implements INode {
     private _generateUmlNode(parent: AbstractNode): AbstractNode {
         const umlNode = parent.addNode('y:UMLClassNode');
         umlNode.addNode('y:Geometry')
-            .setAttribute('height', '100.0')
-            .setAttribute('width', '100.0')
+            .setAttribute('height', (46 + 14 * this._attributes.length).toString())
+            .setAttribute('width', this._getWidth().toString())
             .setAttribute('x', '0.0')
             .setAttribute('y', '0.0');
         umlNode.addNode('y:Fill')
@@ -85,7 +94,7 @@ export default class Node implements INode {
         const nodeLabel = parent.addNode('y:NodeLabel')
             .setAttribute('alignment', 'center')
             .setAttribute('autoSizePolicy', 'content')
-            .setAttribute('fontFamily', 'Courier New')
+            .setAttribute('fontFamily', 'FreeMono')
             .setAttribute('fontSize', '13')
             .setAttribute('fontStyle', 'bold')
             .setAttribute('hasBackgroundColor', 'false')
@@ -101,7 +110,7 @@ export default class Node implements INode {
             .setAttribute('width', '60')
             .setAttribute('x', '0')
             .setAttribute('y', '0');
-        nodeLabel.setValue('MyColumn');
+        nodeLabel.setValue(this._name);
         nodeLabel.addNode('y:LabelModel').addNode('y:SmartNodeLabelModel').setAttribute('distance', '4.0');
         nodeLabel.addNode('y:ModelParameter').addNode('y:SmartNodeLabelModelParameter')
             .setAttribute('labelRatioX', '0.0')
@@ -114,5 +123,14 @@ export default class Node implements INode {
             .setAttribute('upY', '-1.0');
 
         return nodeLabel;
+    }
+
+    private _getWidth(): number {
+        const attributeSize = this._attributes
+            .map(attr => attr.getPixelWidth())
+            .reduce((max, current) => current > max ? current : max, 50);
+        const titleSize = this._name.length * 8 + 20;
+
+        return Math.max(attributeSize, titleSize);
     }
 }
