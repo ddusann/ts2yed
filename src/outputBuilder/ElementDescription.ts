@@ -57,4 +57,8 @@ export default class ElementDescription implements INode {
         }
         return node;
     }
+
+    getId(): string {
+        return this._id;
+    }
 }

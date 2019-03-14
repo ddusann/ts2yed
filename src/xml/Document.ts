@@ -45,7 +45,7 @@ export default class Document extends Node {
 
     save(filepath: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            const file = this._getElement().end({ pretty: true });
+            const file = this._getElement().end({ pretty: false });
             fs.writeFile(filepath, file, { encoding: 'utf-8' }, (err => {
                 if (err) {
                     reject(new Error(err.message));

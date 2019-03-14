@@ -78,10 +78,10 @@ export default abstract class AbstractNode {
 
     protected _getElement(parent: xmlbuilder.XMLElementOrXMLNode): xmlbuilder.XMLElementOrXMLNode {
         const xmlElement = parent.ele(this._tagName, this._getAttributes());
-        this._generateChildren(xmlElement);
         if (this._value) {
             xmlElement.text(this._value);
         }
+        this._generateChildren(xmlElement);
         return xmlElement;
     }
 }

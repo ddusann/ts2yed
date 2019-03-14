@@ -25,12 +25,28 @@
 
 import AbstractNode from '../xml/AbstractNode';
 import INode from '../common/INode';
+import Node from './Node';
 
 export default class Graph implements INode {
+    private _nodes: Node[];
+
+    constructor() {
+        this._nodes = [];
+    }
+
+    addNode(node: Node): void {
+        this._nodes.push(node);
+    }
+
     generateNode(parent: AbstractNode): AbstractNode {
-        const node = parent.addNode('graph');
-        node.setAttribute('edgedefault', 'directed');
-        node.setAttribute('id', 'G');
-        return node;
+        const graph = parent.addNode('graph');
+        graph.setAttribute('edgedefault', 'directed');
+        graph.setAttribute('id', 'G');
+
+        this._nodes.forEach(node => {
+            node.generateNode(graph);
+        });
+
+        return graph;
     }
 }
