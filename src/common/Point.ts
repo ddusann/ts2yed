@@ -31,4 +31,8 @@ export default class Point {
         this.x = x;
         this.y = y;
     }
+
+    move(dx: number, dy: number): Point {
+        return new Point(this.x + dx, this.y + dy);
+    }
 }
