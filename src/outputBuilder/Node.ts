@@ -29,18 +29,21 @@ import ElementDescriptions from './ElementDescriptions';
 import INode from '../common/INode';
 import IdGenerator from './IdGenerator';
 import Method from './Method';
+import Point from '../common/Point';
 
 export default class Node implements INode {
     private _attributes: Attribute[];
     private _id: string;
     private _methods: Method[];
     private _name: string;
+    private _position: Point;
 
     constructor(name: string) {
         this._id = IdGenerator.get('n');
         this._attributes = [];
         this._methods = [];
         this._name = name;
+        this._position = new Point(0, 0);
     }
 
     addAttribute(attribute: Attribute): void {
@@ -62,6 +65,14 @@ export default class Node implements INode {
         return node;
     }
 
+    getId(): string {
+        return this._id;
+    }
+
+    getPosition(): Point {
+        return this._position;
+    }
+
     private _generateUmlContent(parent: AbstractNode): AbstractNode {
         const umlContent = parent.addNode('y:UML')
             .setAttribute('clipContent', 'true')
@@ -81,8 +92,8 @@ export default class Node implements INode {
         umlNode.addNode('y:Geometry')
             .setAttribute('height', this._getHeight().toString())
             .setAttribute('width', this._getWidth().toString())
-            .setAttribute('x', '0.0')
-            .setAttribute('y', '0.0');
+            .setAttribute('x', this._position.x.toString())
+            .setAttribute('y', this._position.y.toString());
         umlNode.addNode('y:Fill')
             .setAttribute('color', '#FF9900')
             .setAttribute('transparent', 'false');

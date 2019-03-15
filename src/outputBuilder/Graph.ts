@@ -24,14 +24,21 @@
  */
 
 import AbstractNode from '../xml/AbstractNode';
+import Edge from './Edge';
 import INode from '../common/INode';
 import Node from './Node';
 
 export default class Graph implements INode {
+    private _edges: Edge[];
     private _nodes: Node[];
 
     constructor() {
+        this._edges = [];
         this._nodes = [];
+    }
+
+    addEdge(source: Node, target: Node): void {
+        this._edges.push(new Edge(source, target));
     }
 
     addNode(node: Node): void {
@@ -45,6 +52,10 @@ export default class Graph implements INode {
 
         this._nodes.forEach(node => {
             node.generateNode(graph);
+        });
+
+        this._edges.forEach(edge => {
+            edge.generateNode(graph);
         });
 
         return graph;
