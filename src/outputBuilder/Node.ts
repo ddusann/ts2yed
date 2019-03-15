@@ -28,20 +28,30 @@ import Attribute from './Attribute';
 import ElementDescriptions from './ElementDescriptions';
 import INode from '../common/INode';
 import IdGenerator from './IdGenerator';
+import Method from './Method';
 
 export default class Node implements INode {
     private _attributes: Attribute[];
     private _id: string;
+    private _methods: Method[];
     private _name: string;
 
     constructor(name: string) {
         this._id = IdGenerator.get('n');
         this._attributes = [];
+        this._methods = [];
         this._name = name;
+    }
+_getHeight(): number {
+        return 46 + 14 * (this._attributes.length + this._methods.length);
     }
 
     addAttribute(attribute: Attribute): void {
         this._attributes.push(attribute);
+    }
+
+    addMethod(method: Method): void {
+        this._methods.push(method);
     }
 
     generateNode(parent: AbstractNode): AbstractNode {
@@ -64,7 +74,7 @@ export default class Node implements INode {
             .setAttribute('stereotype', '')
             .setAttribute('use3DEffect', 'true');
         umlContent.addNode('y:AttributeLabel').setValue(this._attributes.map(attr => attr.getLabel()).join('\n'));
-        umlContent.addNode('y:MethodLabel');
+        umlContent.addNode('y:MethodLabel').setValue(this._methods.map(method => method.getLabel()).join('\n'));
 
         return umlContent;
     }
@@ -72,7 +82,7 @@ export default class Node implements INode {
     private _generateUmlNode(parent: AbstractNode): AbstractNode {
         const umlNode = parent.addNode('y:UMLClassNode');
         umlNode.addNode('y:Geometry')
-            .setAttribute('height', (46 + 14 * this._attributes.length).toString())
+            .setAttribute('height', this._getHeight().toString())
             .setAttribute('width', this._getWidth().toString())
             .setAttribute('x', '0.0')
             .setAttribute('y', '0.0');
@@ -126,11 +136,10 @@ export default class Node implements INode {
     }
 
     private _getWidth(): number {
-        const attributeSize = this._attributes
-            .map(attr => attr.getPixelWidth())
-            .reduce((max, current) => current > max ? current : max, 50);
+        const attributeSize = Math.max(...this._attributes.map(attr => attr.getPixelWidth()));
+        const methodSize = Math.max(...this._methods.map(attr => attr.getPixelWidth()));
         const titleSize = this._name.length * 8 + 20;
 
-        return Math.max(attributeSize, titleSize);
+        return Math.max(attributeSize, methodSize, titleSize, 50);
     }
 }
