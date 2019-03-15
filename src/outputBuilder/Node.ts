@@ -42,9 +42,6 @@ export default class Node implements INode {
         this._methods = [];
         this._name = name;
     }
-_getHeight(): number {
-        return 46 + 14 * (this._attributes.length + this._methods.length);
-    }
 
     addAttribute(attribute: Attribute): void {
         this._attributes.push(attribute);
@@ -133,6 +130,10 @@ _getHeight(): number {
             .setAttribute('upY', '-1.0');
 
         return nodeLabel;
+    }
+
+    private _getHeight(): number {
+        return 46 + 14 * (this._attributes.length + this._methods.length);
     }
 
     private _getWidth(): number {
