@@ -30,6 +30,7 @@ import INode from '../common/INode';
 import IdGenerator from './IdGenerator';
 import Method from './Method';
 import Point from '../common/Point';
+import Rectangle from '../common/Rectangle';
 
 export default class Node implements INode {
     private _attributes: Attribute[];
@@ -65,12 +66,22 @@ export default class Node implements INode {
         return node;
     }
 
+    getBoundingRectangle(): Rectangle {
+        const width = this._getWidth();
+        const height = this._getHeight();
+        return new Rectangle(this._position.move(-width / 2, -height / 2), width, height);
+    }
+
     getId(): string {
         return this._id;
     }
 
     getPosition(): Point {
         return this._position;
+    }
+
+    setPosition(point: Point): void {
+        this._position = point;
     }
 
     private _generateUmlContent(parent: AbstractNode): AbstractNode {

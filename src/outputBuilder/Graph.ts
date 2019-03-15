@@ -37,8 +37,8 @@ export default class Graph implements INode {
         this._nodes = [];
     }
 
-    addEdge(source: Node, target: Node): void {
-        this._edges.push(new Edge(source, target));
+    addEdge(edge: Edge): void {
+        this._edges.push(edge);
     }
 
     addNode(node: Node): void {

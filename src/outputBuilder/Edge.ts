@@ -30,21 +30,25 @@ import IdGenerator from './IdGenerator';
 import Node from './Node';
 import Point from '../common/Point';
 
+type EdgeType = 'usage'|'implementation'|'inheritance';
+
 export default class Edge implements INode {
+    private _edgeType: EdgeType;
     private _id: string;
     private _points: Point[];
     private _source: Node;
-    private _sourcePoint: Point;
+    private _sourceDPoint: Point;
     private _target: Node;
-    private _targetPoint: Point;
+    private _targetDPoint: Point;
 
-    constructor(source: Node, target: Node) {
+    constructor(source: Node, target: Node, edgeType: EdgeType = 'usage') {
         this._id = IdGenerator.get('e');
         this._source = source;
-        this._sourcePoint = source.getPosition();
+        this._sourceDPoint = new Point(0, 0);
         this._target = target;
-        this._targetPoint = target.getPosition();
+        this._targetDPoint = new Point(0, 0);
         this._points = [];
+        this._edgeType = edgeType;
     }
 
     addPoint(point: Point): Edge {
@@ -66,12 +70,20 @@ export default class Edge implements INode {
         return edge;
     }
 
+    setSourceDPoint(dPoint: Point): void {
+        this._sourceDPoint = dPoint;
+    }
+
+    setTargetDPoint(dPoint: Point): void {
+        this._targetDPoint = dPoint;
+    }
+
     private _generatePath(parent: AbstractNode): AbstractNode {
         const path = parent.addNode('y:Path');
-        path.setAttribute('sx', this._sourcePoint.x.toString());
-        path.setAttribute('sy', this._sourcePoint.y.toString());
-        path.setAttribute('tx', this._targetPoint.x.toString());
-        path.setAttribute('ty', this._targetPoint.y.toString());
+        path.setAttribute('sx', this._sourceDPoint.x.toString());
+        path.setAttribute('sy', this._sourceDPoint.y.toString());
+        path.setAttribute('tx', this._targetDPoint.x.toString());
+        path.setAttribute('ty', this._targetDPoint.y.toString());
         this._points.forEach(point => {
             path.addNode('y:Point').setAttribute('x', point.x.toString()).setAttribute('y', point.y.toString());
         });
@@ -82,14 +94,37 @@ export default class Edge implements INode {
         const polyLine = parent.addNode('y:PolyLineEdge');
         this._generatePath(polyLine);
         polyLine.addNode('y:LineStyle')
-            .setAttribute('color', '#000000')
-            .setAttribute('type', 'line')
+            .setAttribute('color', this._getArrowColor())
+            .setAttribute('type', this._getArrowStyle())
             .setAttribute('width', '1.0');
         polyLine.addNode('y:Arrows')
             .setAttribute('source', 'none')
-            .setAttribute('target', 'standard');
+            .setAttribute('target', this._getArrowType());
         polyLine.addNode('y:BendStyle')
             .setAttribute('smoothed', 'false');
         return polyLine;
+    }
+
+    private _getArrowColor(): string {
+        switch (this._edgeType) {
+            case 'implementation': return '#0000FF';
+            case 'inheritance': return '#FF0000';
+            default: return '#000000';
+        }
+    }
+
+    private _getArrowStyle(): string {
+        switch (this._edgeType) {
+            case 'implementation': return 'dashed';
+            default: return 'line';
+        }
+    }
+
+    private _getArrowType(): string {
+        switch (this._edgeType) {
+            case 'implementation': return 'white_delta';
+            case 'inheritance': return 'white_delta';
+            default: return 'standard';
+        }
     }
 }
