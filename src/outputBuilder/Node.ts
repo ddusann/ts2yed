@@ -24,18 +24,17 @@
  */
 
 import AbstractNode from '../xml/AbstractNode';
-import Attribute from './Attribute';
 import ElementDescriptions from './ElementDescriptions';
 import INode from '../common/INode';
 import IdGenerator from './IdGenerator';
-import Method from './Method';
 import Point from '../common/Point';
+import Property from './Property';
 import Rectangle from '../common/Rectangle';
 
 export default class Node implements INode {
-    private _attributes: Attribute[];
+    private _attributes: Property[];
     private _id: string;
-    private _methods: Method[];
+    private _methods: Property[];
     private _name: string;
     private _position: Point;
 
@@ -47,11 +46,11 @@ export default class Node implements INode {
         this._position = new Point(0, 0);
     }
 
-    addAttribute(attribute: Attribute): void {
+    addAttribute(attribute: Property): void {
         this._attributes.push(attribute);
     }
 
-    addMethod(method: Method): void {
+    addMethod(method: Property): void {
         this._methods.push(method);
     }
 
