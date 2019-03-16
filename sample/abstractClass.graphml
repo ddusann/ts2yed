@@ -42,7 +42,7 @@
       <data key="d6">
         <y:UMLClassNode>
           <y:Geometry height="85.0" width="217.0" x="856.0" y="115.0"/>
-          <y:Fill color="#CCCC00" transparent="false"/>
+          <y:Fill color="#FFCC00" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="104.66748046875" x="56.166259765625" y="25.96875">AbstractClass<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
