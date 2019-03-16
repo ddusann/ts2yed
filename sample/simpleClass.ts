@@ -1,3 +1,7 @@
+import ts2, { createStatement as xyz } from 'typescript';
+
+import ts from 'typescript';
+
 export default class ClassName {
     private _attributeName: string;
 
