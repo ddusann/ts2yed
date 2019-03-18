@@ -189,29 +189,22 @@ export default abstract class FileParser {
     }
 
     private static _parseMember(node: any): Member {
-        const isKey = node.kind === ts.SyntaxKind.IndexSignature;
-        const memberName = node.kind === ts.SyntaxKind.Constructor
-            ? 'constructor'
-            : isKey
-                ? { name: node.parameters[0].name.text, type: TypeParser.parse(node.parameters[0].type) }
-                : node.name.text;
-        const optional = !!(node.questionToken);
-        const optionalType = optional ? [IModifier.OPTIONAL] : [];
-        const modifiers = optionalType.concat(FileParser._parseModifiers(node));
+        const modifiers = FileParser._parseModifiers(node);
         const type = node.type ? TypeParser.parse(node.type) : new NotDefinedType();
 
         switch (node.kind) {
             case ts.SyntaxKind.MethodSignature:
             case ts.SyntaxKind.MethodDeclaration:
                 return new Method(
-                    memberName,
+                    node.name.text,
                     modifiers,
                     FileParser._parseParameters(node),
                     type,
-                    FileParser._parseTypeParameters(node),
-                    isKey);
-            case ts.SyntaxKind.GetAccessor: return new Getter(memberName, modifiers, type);
-            case ts.SyntaxKind.SetAccessor: return new Setter(memberName, modifiers, FileParser._parseParameters(node));
+                    FileParser._parseTypeParameters(node)
+                );
+            case ts.SyntaxKind.GetAccessor: return new Getter(node.name.text, modifiers, type);
+            case ts.SyntaxKind.SetAccessor:
+                return new Setter(node.name.text, modifiers, FileParser._parseParameters(node));
             case ts.SyntaxKind.Constructor:
                 return new Constructor(
                     modifiers,
@@ -220,14 +213,21 @@ export default abstract class FileParser {
                 );
             case ts.SyntaxKind.PropertySignature:
             case ts.SyntaxKind.PropertyDeclaration:
-                return new Attribute(memberName, modifiers, type, isKey);
+                return new Attribute(node.name.text, modifiers, type);
+            case ts.SyntaxKind.IndexSignature:
+                return new Attribute({
+                    name: node.parameters[0].name.text,
+                    type: TypeParser.parse(node.parameters[0].type)
+                }, modifiers, type, true);
             default: throw new Error('Unknown member!');
         }
     }
 
     private static _parseModifiers(node: any): IModifier[] {
+        const modifiers = node.questionToken ? [IModifier.OPTIONAL] : [];
+
         if (!node || !Array.isArray(node.modifiers)) {
-            return [];
+            return modifiers;
         }
 
         return node.modifiers.map((modifier: any): IModifier|null => {
@@ -240,7 +240,7 @@ export default abstract class FileParser {
                 case ts.SyntaxKind.ReadonlyKeyword: return IModifier.READONLY;
                 default: return null;
             }
-        }).filter((modifier: IModifier|null) => modifier !== null);
+        }).filter((modifier: IModifier|null) => modifier !== null).concat(modifiers);
     }
 
     private static _parseNamedImport(node: any): IImport {
