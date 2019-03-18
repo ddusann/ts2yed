@@ -23,20 +23,16 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import Type from './types/Type';
 
-export default class ReferenceType extends Type {
+export default class TypeDefinition {
     private _name: string;
+    private _type: Type;
     private _typeParameters: Type[];
 
-    constructor(name: string, typeParameters: Type[]) {
-        super();
-
+    constructor(name: string, type: Type, typeParameters: Type[]) {
         this._name = name;
+        this._type = type;
         this._typeParameters = typeParameters;
-    }
-
-    getType(): TypeCategory {
-        return TypeCategory.REFERENCE;
     }
 }

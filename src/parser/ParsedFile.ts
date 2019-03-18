@@ -25,26 +25,33 @@
 
 import Export from './Export';
 import Import from './Import';
+import TypeDefinition from './TypeDefinition';
 
 export default class ParsedFile {
     private _defaultExport?: Export;
     private _exports: Export[];
     private _imports: Import[];
+    private _types: TypeDefinition[];
 
     constructor() {
         this._imports = [];
         this._exports = [];
+        this._types = [];
     }
 
-    addDefaultExport(defaultExport: Export) {
+    addDefaultExport(defaultExport: Export): void {
         this._defaultExport = defaultExport;
     }
 
-    addExport(exportStatement: Export) {
+    addExport(exportStatement: Export): void {
         this._exports.push(exportStatement);
     }
 
-    addImport(importStatement: Import) {
+    addImport(importStatement: Import): void {
         this._imports.push(importStatement);
+    }
+
+    addType(type: TypeDefinition): void {
+        this._types.push(type);
     }
 }

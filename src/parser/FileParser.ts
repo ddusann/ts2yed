@@ -27,6 +27,8 @@ import Import, { IImport } from './Import';
 
 import Export from './Export';
 import ParsedFile from './ParsedFile';
+import TypeDefinition from './TypeDefinition';
+import TypeParser from './types/TypeParser';
 import ts from 'typescript';
 
 export default abstract class FileParser {
@@ -43,6 +45,8 @@ export default abstract class FileParser {
                 case ts.SyntaxKind.ImportDeclaration:
                     file.addImport(FileParser._parseImport(statement));
                     break;
+                case ts.SyntaxKind.TypeAliasDeclaration:
+                    file.addType(FileParser._parseTypeDefinition(statement));
             }
         });
 
@@ -108,5 +112,9 @@ export default abstract class FileParser {
             originalName: node.propertyName ? node.propertyName.text : node.name.text,
             usedName: node.name.text
         };
+    }
+
+    private static _parseTypeDefinition(node: any): TypeDefinition {
+        return new TypeDefinition(node.name.text, TypeParser.parse(node.type), []);
     }
 }

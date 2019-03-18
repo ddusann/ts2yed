@@ -51,7 +51,10 @@ export default abstract class TypeParser {
                 TypeParser.parse(node.type),
                 TypeParser._parseTypeParameters(node)
             );
-            case ts.SyntaxKind.TypeReference: return new ReferenceType(node.name.text);
+            case ts.SyntaxKind.TypeReference: return new ReferenceType(
+                node.typeName.text,
+                this._parseTypeParameters(node)
+            );
             case ts.SyntaxKind.UnionType: return new UnionType(TypeParser._parseUnionTypes(node));
             case ts.SyntaxKind.IntersectionType: return new UnionType(TypeParser._parseIntersectionTypes(node));
             case ts.SyntaxKind.ConditionalType: return TypeParser._parseConditionType(node);
@@ -78,7 +81,7 @@ export default abstract class TypeParser {
             throw new Error('Unknown condition type');
         }
 
-        const checkedType = TypeParser.parse(node.checkType);
+        const checkedType = node.checkType.typeName.text;
         const extendedType = TypeParser.parse(node.extendsType);
         const trueType = TypeParser.parse(node.trueType);
         const falseType = TypeParser.parse(node.falseType);
