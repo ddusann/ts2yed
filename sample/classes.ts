@@ -2,7 +2,7 @@
 export class MyClass {
     private static _privateStaticAttribute: string;
     _publicAttribute: string;
-    protected _protectedAttribute: string;
+    protected _protectedAttribute?: string;
     private readonly _privateAttribute: string;
 
     get smth(): number { return 42; }
@@ -23,7 +23,7 @@ export class MyClass {
         this._publicAttribute = 's';
     }
 
-    another2() {
+    private another2() {
         this._publicAttribute = 's';
         return false;
     }
