@@ -25,6 +25,7 @@
 
 import Import, { IImport } from './Import';
 
+import Enum from './Enum';
 import Export from './Export';
 import ParsedFile from './ParsedFile';
 import TypeDefinition from './TypeDefinition';
@@ -47,10 +48,19 @@ export default abstract class FileParser {
                     break;
                 case ts.SyntaxKind.TypeAliasDeclaration:
                     file.addType(FileParser._parseTypeDefinition(statement));
+                    break;
+                case ts.SyntaxKind.EnumDeclaration:
+                    file.addEnum(FileParser._parseEnum(statement));
+                    break;
             }
         });
 
         return file;
+    }
+
+    private static _parseEnum(node: any): Enum {
+        const values = node.members.map((member: any) => member.name.text);
+        return new Enum(node.name.text, values);
     }
 
     private static _parseExport(node: any, file: ParsedFile): void {

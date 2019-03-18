@@ -23,42 +23,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Enum from './Enum';
-import Export from './Export';
-import Import from './Import';
-import TypeDefinition from './TypeDefinition';
+export default class Enum {
+    private _name: string;
+    private _values: string[];
 
-export default class ParsedFile {
-    private _defaultExport?: Export;
-    private _enums: Enum[];
-    private _exports: Export[];
-    private _imports: Import[];
-    private _types: TypeDefinition[];
-
-    constructor() {
-        this._imports = [];
-        this._enums = [];
-        this._exports = [];
-        this._types = [];
-    }
-
-    addDefaultExport(defaultExport: Export): void {
-        this._defaultExport = defaultExport;
-    }
-
-    addEnum(enumStatement: Enum): void {
-        this._enums.push(enumStatement);
-    }
-
-    addExport(exportStatement: Export): void {
-        this._exports.push(exportStatement);
-    }
-
-    addImport(importStatement: Import): void {
-        this._imports.push(importStatement);
-    }
-
-    addType(type: TypeDefinition): void {
-        this._types.push(type);
+    constructor(name: string, values: string[]) {
+        this._name = name;
+        this._values = values;
     }
 }
