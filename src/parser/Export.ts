@@ -23,23 +23,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Export from './Export';
-import Import from './Import';
+export default class Export {
+    private _name: string;
 
-export default class ParsedFile {
-    private _exports: Export[];
-    private _imports: Import[];
-
-    constructor() {
-        this._imports = [];
-        this._exports = [];
-    }
-
-    addExport(exportStatement: Export) {
-        this._exports.push(exportStatement);
-    }
-
-    addImport(importStatement: Import) {
-        this._imports.push(importStatement);
+    constructor(name: string) {
+        this._name = name;
     }
 }
