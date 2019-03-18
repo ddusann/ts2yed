@@ -23,20 +23,24 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION
-}
+import Type, { TypeCategory } from './Type';
 
-export default abstract class Type {
-    abstract getType(): TypeCategory;
+export default class ConditionType extends Type {
+    private _checkedType: Type;
+    private _extendsType: Type;
+    private _falseType: Type;
+    private _trueType: Type;
+
+    constructor(checkedType: Type, extendsType: Type, falseType: Type, trueType: Type) {
+        super();
+
+        this._checkedType = checkedType;
+        this._extendsType = extendsType;
+        this._falseType = falseType;
+        this._trueType = trueType;
+    }
+
+    getType(): TypeCategory {
+        return TypeCategory.CONDITION;
+    }
 }

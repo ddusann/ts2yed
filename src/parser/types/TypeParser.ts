@@ -27,6 +27,7 @@ import Attribute, { PropertyType } from '../Attribute';
 
 import ArrayType from './ArrayType';
 import BooleanType from './BooleanType';
+import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
 import NumberType from './NumberType';
 import ObjectType from './ObjectType';
@@ -34,6 +35,7 @@ import Parameter from '../Parameter';
 import ReferenceType from './ReferenceType';
 import StringType from './StringType';
 import Type from './Type';
+import UnionType from './UnionType';
 import ts from 'typescript';
 
 export default abstract class TypeParser {
@@ -42,14 +44,17 @@ export default abstract class TypeParser {
             case ts.SyntaxKind.NumberKeyword: return new NumberType();
             case ts.SyntaxKind.StringKeyword: return new StringType();
             case ts.SyntaxKind.BooleanKeyword: return new BooleanType();
-            case ts.SyntaxKind.ArrayType: return new ArrayType(this._parseArray(node));
-            case ts.SyntaxKind.TypeLiteral: return new ObjectType(this._parseAttributes(node));
+            case ts.SyntaxKind.ArrayType: return new ArrayType(TypeParser._parseArray(node));
+            case ts.SyntaxKind.TypeLiteral: return new ObjectType(TypeParser._parseAttributes(node));
             case ts.SyntaxKind.FunctionType: return new FunctionType(
-                this._parseParameters(node),
+                TypeParser._parseParameters(node),
                 TypeParser.parse(node.type),
-                this._parseTypeParameters(node)
+                TypeParser._parseTypeParameters(node)
             );
             case ts.SyntaxKind.TypeReference: return new ReferenceType(node.name.text);
+            case ts.SyntaxKind.UnionType: return new UnionType(TypeParser._parseUnionTypes(node));
+            case ts.SyntaxKind.IntersectionType: return new UnionType(TypeParser._parseIntersectionTypes(node));
+            case ts.SyntaxKind.ConditionalType: return TypeParser._parseConditionType(node);
             default: throw new Error('Unknown type!');
         }
     }
@@ -66,6 +71,27 @@ export default abstract class TypeParser {
             const flags = optional ? [PropertyType.OPTIONAL] : [];
             return new Attribute(name, flags, type);
         });
+    }
+
+    private static _parseConditionType(node: any): ConditionType {
+        if (!node.extendsType) {
+            throw new Error('Unknown condition type');
+        }
+
+        const checkedType = TypeParser.parse(node.checkType);
+        const extendedType = TypeParser.parse(node.extendsType);
+        const trueType = TypeParser.parse(node.trueType);
+        const falseType = TypeParser.parse(node.falseType);
+
+        return new ConditionType(checkedType, extendedType, falseType, trueType);
+    }
+
+    private static _parseIntersectionTypes(node: any): Type[] {
+        if (!node || !Array.isArray(node.types)) {
+            return [];
+        }
+
+        return node.types.map((type: any) => TypeParser.parse(type));
     }
 
     private static _parseParameters(node: any): Parameter[] {
@@ -86,5 +112,13 @@ export default abstract class TypeParser {
         return parameters.map((parameter: any) => {
             return TypeParser.parse(parameter);
         });
+    }
+
+    private static _parseUnionTypes(node: any): Type[] {
+        if (!node || !Array.isArray(node.types)) {
+            return [];
+        }
+
+        return node.types.map((type: any) => TypeParser.parse(type));
     }
 }

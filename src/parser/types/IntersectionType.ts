@@ -23,20 +23,18 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION
-}
+import Type, { TypeCategory } from './Type';
 
-export default abstract class Type {
-    abstract getType(): TypeCategory;
+export default class IntersectionType extends Type {
+    private _types: Type[];
+
+    constructor(types: Type[]) {
+        super();
+
+        this._types = types;
+    }
+
+    getType(): TypeCategory {
+        return TypeCategory.INTERSECTION;
+    }
 }
