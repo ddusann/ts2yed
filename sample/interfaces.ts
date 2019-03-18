@@ -28,3 +28,5 @@ export default interface ISecondExtended extends IExtended {
     sum: number;
     [key: number]: string;
 }
+
+export interface ITyped2 extends Promise<number> {}
