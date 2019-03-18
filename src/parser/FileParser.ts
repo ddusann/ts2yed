@@ -115,6 +115,14 @@ export default abstract class FileParser {
     }
 
     private static _parseTypeDefinition(node: any): TypeDefinition {
-        return new TypeDefinition(node.name.text, TypeParser.parse(node.type), []);
+        return new TypeDefinition(node.name.text, TypeParser.parse(node.type), FileParser._parseTypeParameters(node));
+    }
+
+    private static _parseTypeParameters(node: any): string[] {
+        if (!node || !node.typeParameters) {
+            return [];
+        }
+
+        return node.typeParameters.map((param: any) => param.name.text);
     }
 }

@@ -28,9 +28,9 @@ import Type from './types/Type';
 export default class TypeDefinition {
     private _name: string;
     private _type: Type;
-    private _typeParameters: Type[];
+    private _typeParameters: string[];
 
-    constructor(name: string, type: Type, typeParameters: Type[]) {
+    constructor(name: string, type: Type, typeParameters: string[]) {
         this._name = name;
         this._type = type;
         this._typeParameters = typeParameters;
