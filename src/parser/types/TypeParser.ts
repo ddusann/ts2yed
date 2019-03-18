@@ -23,12 +23,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Attribute, { PropertyType } from '../Attribute';
-
 import ArrayType from './ArrayType';
+import Attribute from '../Attribute';
 import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
+import { MemberType } from '../Member';
 import NumberType from './NumberType';
 import ObjectType from './ObjectType';
 import Parameter from '../Parameter';
@@ -71,7 +71,7 @@ export default abstract class TypeParser {
             const name = member.name.text;
             const optional = !!member.questionToken;
             const type = TypeParser.parse(member.type);
-            const flags = optional ? [PropertyType.OPTIONAL] : [];
+            const flags = optional ? [MemberType.OPTIONAL] : [];
             return new Attribute(name, flags, type);
         });
     }

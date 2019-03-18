@@ -25,12 +25,31 @@
 
 import Type from './types/Type';
 
-export default class Parameter {
-    private _name: string;
+export enum MemberType {
+    PRIVATE,
+    PROTECTED,
+    PUBLIC,
+    STATIC,
+    ABSTRACT,
+    READONLY,
+    OPTIONAL
+}
+
+export interface IKeyName {
+    name: string;
+    type: Type;
+}
+
+export default class Member {
+    private _isKey: boolean;
+    private _memberTypes: MemberType[];
+    private _name: string|IKeyName;
     private _type: Type;
 
-    constructor(name: string, type: Type) {
+    constructor(name: string|IKeyName, memberTypes: MemberType[], type: Type, isKey: boolean = false) {
         this._name = name;
+        this._memberTypes = memberTypes;
         this._type = type;
+        this._isKey = isKey;
     }
 }

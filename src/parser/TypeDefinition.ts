@@ -23,14 +23,15 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
 
 export default class TypeDefinition {
     private _name: string;
     private _type: Type;
-    private _typeParameters: string[];
+    private _typeParameters: ReferenceType[];
 
-    constructor(name: string, type: Type, typeParameters: string[]) {
+    constructor(name: string, type: Type, typeParameters: ReferenceType[]) {
         this._name = name;
         this._type = type;
         this._typeParameters = typeParameters;

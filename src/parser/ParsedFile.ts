@@ -26,6 +26,7 @@
 import Enum from './Enum';
 import Export from './Export';
 import Import from './Import';
+import Interface from './Interface';
 import TypeDefinition from './TypeDefinition';
 
 export default class ParsedFile {
@@ -33,12 +34,14 @@ export default class ParsedFile {
     private _enums: Enum[];
     private _exports: Export[];
     private _imports: Import[];
+    private _interfaces: Interface[];
     private _types: TypeDefinition[];
 
     constructor() {
         this._imports = [];
         this._enums = [];
         this._exports = [];
+        this._interfaces = [];
         this._types = [];
     }
 
@@ -56,6 +59,10 @@ export default class ParsedFile {
 
     addImport(importStatement: Import): void {
         this._imports.push(importStatement);
+    }
+
+    addInterface(interfaceStatement: Interface) {
+        this._interfaces.push(interfaceStatement);
     }
 
     addType(type: TypeDefinition): void {

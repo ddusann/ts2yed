@@ -23,26 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type from './types/Type';
+import Member from './Member';
 
-export enum PropertyType {
-    PRIVATE,
-    PROTECTED,
-    PUBLIC,
-    STATIC,
-    ABSTRACT,
-    READONLY,
-    OPTIONAL
-}
-
-export default class Attribute {
-    private _name: string;
-    private _properties: PropertyType[];
-    private _type: Type;
-
-    constructor(name: string, properties: PropertyType[], type: Type) {
-        this._name = name;
-        this._properties = properties;
-        this._type = type;
-    }
+export default class Attribute extends Member {
 }

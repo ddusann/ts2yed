@@ -23,14 +23,27 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import Member, { IKeyName, MemberType } from './Member';
+
+import Parameter from './Parameter';
+import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
 
-export default class Parameter {
-    private _name: string;
-    private _type: Type;
+export default class Method extends Member {
+    private _parameters: Parameter[];
+    private _typeParameters: ReferenceType[];
 
-    constructor(name: string, type: Type) {
-        this._name = name;
-        this._type = type;
+    constructor(
+        name: string|IKeyName,
+        memberTypes: MemberType[],
+        parameters: Parameter[],
+        type: Type,
+        typeParameters: ReferenceType[],
+        isKey: boolean = false
+    ) {
+        super(name, memberTypes, type, isKey);
+
+        this._parameters = parameters;
+        this._typeParameters = typeParameters;
     }
 }

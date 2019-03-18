@@ -23,14 +23,19 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type from './types/Type';
+import Member from './Member';
+import ReferenceType from './types/ReferenceType';
 
-export default class Parameter {
+export default class Interface {
+    private _extensions: string[];
+    private _members: Member[];
     private _name: string;
-    private _type: Type;
+    private _typeParameters: ReferenceType[];
 
-    constructor(name: string, type: Type) {
+    constructor(name: string, members: Member[], extensions: string[], typeParameters: ReferenceType[]) {
         this._name = name;
-        this._type = type;
+        this._members = members;
+        this._extensions = extensions;
+        this._typeParameters = typeParameters;
     }
 }

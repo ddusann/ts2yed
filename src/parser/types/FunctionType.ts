@@ -27,7 +27,7 @@ import Type, { TypeCategory } from './Type';
 
 import Parameter from '../Parameter';
 
-export default class ObjectType extends Type {
+export default class FunctionType extends Type {
     private _parameters: Parameter[];
     private _returnType: Type;
     private _typeParameters: Type[];
