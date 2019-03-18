@@ -33,7 +33,7 @@ interface IIfc {
     another: () => void;
 }
 
-export abstract class MyAbstractClass<T> extends Promise<T> implements IIfc {
+abstract class MyAbstractClass<T> extends Promise<T> implements IIfc {
     abstract _abstractPrivateAttribute: string;
 
     constructor() {
