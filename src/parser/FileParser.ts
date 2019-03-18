@@ -25,6 +25,7 @@
 
 import Import, { IImport } from './Import';
 
+import Export from './Export';
 import ParsedFile from './ParsedFile';
 import ts from 'typescript';
 
@@ -36,6 +37,8 @@ export default abstract class FileParser {
         }
 
         node.statements.forEach((statement: any) => {
+            this._parseExport(statement, file);
+
             switch (statement.kind) {
                 case ts.SyntaxKind.ImportDeclaration:
                     file.addImport(FileParser._parseImport(statement));
@@ -44,6 +47,49 @@ export default abstract class FileParser {
         });
 
         return file;
+    }
+
+    private static _parseExport(node: any, file: ParsedFile): void {
+        if (!node
+            || ((!node.modifiers || !Array.isArray(node.modifiers)) && node.kind !== ts.SyntaxKind.ExportAssignment)
+        ) {
+            return;
+        }
+
+        let isDefault = !!(node.kind === ts.SyntaxKind.ExportAssignment);
+        let isExport = !!(node.kind === ts.SyntaxKind.ExportAssignment);
+        let names: any[] = [];
+
+        if (node.kind === ts.SyntaxKind.ExportAssignment) {
+            names = [node.expression.text];
+        } else {
+            node.modifiers.find((modifier: any) => {
+                if (node.declarationList && Array.isArray(node.declarationList.declarations)) {
+                    names = node.declarationList.declarations.map((declaration: any) => declaration.name.text);
+                } else if (node.name) {
+                    names = [node.name.text];
+                }
+
+                if (modifier.kind === ts.SyntaxKind.ExportKeyword) {
+                    isExport = true;
+                } else if (modifier.kind === ts.SyntaxKind.DefaultKeyword) {
+                    isDefault = true;
+                }
+            });
+        }
+
+        if (isExport) {
+            if (isDefault) {
+                if (names.length === 0) {
+                    throw new Error('Unknown default export');
+                }
+                file.addDefaultExport(names[0]);
+            } else {
+                names.forEach((name: string) => {
+                    file.addExport(new Export(name));
+                });
+            }
+        }
     }
 
     private static _parseImport(node: any): Import {

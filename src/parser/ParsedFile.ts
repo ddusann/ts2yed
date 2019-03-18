@@ -27,12 +27,17 @@ import Export from './Export';
 import Import from './Import';
 
 export default class ParsedFile {
+    private _defaultExport?: Export;
     private _exports: Export[];
     private _imports: Import[];
 
     constructor() {
         this._imports = [];
         this._exports = [];
+    }
+
+    addDefaultExport(defaultExport: Export) {
+        this._defaultExport = defaultExport;
     }
 
     addExport(exportStatement: Export) {
