@@ -30,6 +30,7 @@ import Class from './Class';
 import Constructor from './Constructor';
 import Enum from './Enum';
 import Export from './Export';
+import FunctionDefinition from './Function';
 import Getter from './Getter';
 import IModifier from './IModifier';
 import Interface from './Interface';
@@ -69,6 +70,9 @@ export default abstract class FileParser {
                     break;
                 case ts.SyntaxKind.ClassDeclaration:
                     file.addClass(FileParser._parseClass(statement));
+                    break;
+                case ts.SyntaxKind.FunctionDeclaration:
+                    file.addFunction(FileParser._parseFunction(statement));
                     break;
             }
         });
@@ -135,6 +139,15 @@ export default abstract class FileParser {
                 });
             }
         }
+    }
+
+    private static _parseFunction(node: any): FunctionDefinition {
+        const name = node.name ? node.name.text : undefined;
+        const parameters = FileParser._parseParameters(node);
+        const typeParameters = FileParser._parseTypeParameters(node);
+        const type = TypeParser.parse(node.type);
+
+        return new FunctionDefinition(parameters, type, typeParameters, name);
     }
 
     private static _parseHeritage(
