@@ -23,17 +23,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import IModifier from './IModifier';
 import Type from './types/Type';
-
-export enum MemberType {
-    PRIVATE,
-    PROTECTED,
-    PUBLIC,
-    STATIC,
-    ABSTRACT,
-    READONLY,
-    OPTIONAL
-}
 
 export interface IKeyName {
     name: string;
@@ -42,13 +33,13 @@ export interface IKeyName {
 
 export default class Member {
     private _isKey: boolean;
-    private _memberTypes: MemberType[];
+    private _memberTypes: IModifier[];
     private _name: string|IKeyName;
     private _type: Type;
 
-    constructor(name: string|IKeyName, memberTypes: MemberType[], type: Type, isKey: boolean = false) {
+    constructor(name: string|IKeyName, modifiers: IModifier[], type: Type, isKey: boolean = false) {
         this._name = name;
-        this._memberTypes = memberTypes;
+        this._memberTypes = modifiers;
         this._type = type;
         this._isKey = isKey;
     }

@@ -24,16 +24,22 @@
  */
 
 import Import, { IImport } from './Import';
-import Member, { MemberType } from './Member';
 
 import Attribute from './Attribute';
+import Class from './Class';
+import Constructor from './Constructor';
 import Enum from './Enum';
 import Export from './Export';
+import Getter from './Getter';
+import IModifier from './IModifier';
 import Interface from './Interface';
+import Member from './Member';
 import Method from './Method';
+import NotDefinedType from './types/NotDefinedType';
 import Parameter from './Parameter';
 import ParsedFile from './ParsedFile';
 import ReferenceType from './types/ReferenceType';
+import Setter from './Setter';
 import TypeDefinition from './TypeDefinition';
 import TypeParser from './types/TypeParser';
 import ts from 'typescript';
@@ -61,10 +67,26 @@ export default abstract class FileParser {
                 case ts.SyntaxKind.InterfaceDeclaration:
                     file.addInterface(FileParser._parseInterface(statement));
                     break;
+                case ts.SyntaxKind.ClassDeclaration:
+                    file.addClass(FileParser._parseClass(statement));
+                    break;
             }
         });
 
         return file;
+    }
+
+    private static _parseClass(node: any): Class {
+        const className = node.name.text;
+        const typeParameters = this._parseTypeParameters(node);
+        const members = Array.isArray(node.members)
+            ? node.members.map((member: any) => this._parseMember(member))
+            : [];
+        const extensions = FileParser._parseHeritage(node, ts.SyntaxKind.ExtendsKeyword);
+        const implementations = FileParser._parseHeritage(node, ts.SyntaxKind.ImplementsKeyword);
+        const modifiers = FileParser._parseModifiers(node);
+
+        return new Class(className, members, modifiers, extensions, implementations, typeParameters);
     }
 
     private static _parseEnum(node: any): Enum {
@@ -115,6 +137,25 @@ export default abstract class FileParser {
         }
     }
 
+    private static _parseHeritage(
+        node: any,
+        heritageType: ts.SyntaxKind.ImplementsKeyword|ts.SyntaxKind.ExtendsKeyword
+    ): ReferenceType[] {
+        if (!node || !node.heritageClauses) {
+            return [];
+        }
+
+        const heritage = node.heritageClauses.find((clause: any) => clause.token === heritageType);
+        if (!heritage) {
+            return [];
+        }
+
+        return heritage.types.map((type: any) =>
+            new ReferenceType(type.expression.text, Array.isArray(type.typeArguments)
+                ? type.typeArguments.map((arg: any) => TypeParser.parse(arg))
+                : []));
+    }
+
     private static _parseImport(node: any): Import {
         const fileName = node.moduleSpecifier.text;
         const defaultImport = node.importClause.name ? node.importClause.name.text : undefined;
@@ -149,22 +190,57 @@ export default abstract class FileParser {
 
     private static _parseMember(node: any): Member {
         const isKey = node.kind === ts.SyntaxKind.IndexSignature;
-        const memberName = isKey
-            ? { name: node.parameters[0].name.text, type: TypeParser.parse(node.parameters[0].type) }
-            : node.name.text;
+        const memberName = node.kind === ts.SyntaxKind.Constructor
+            ? 'constructor'
+            : isKey
+                ? { name: node.parameters[0].name.text, type: TypeParser.parse(node.parameters[0].type) }
+                : node.name.text;
         const optional = !!(node.questionToken);
-        const optionalType = optional ? [MemberType.OPTIONAL] : [];
-        const type = TypeParser.parse(node.type);
+        const optionalType = optional ? [IModifier.OPTIONAL] : [];
+        const modifiers = optionalType.concat(FileParser._parseModifiers(node));
+        const type = node.type ? TypeParser.parse(node.type) : new NotDefinedType();
 
-        return node.kind === ts.SyntaxKind.MethodSignature
-            ? new Method(
-                memberName,
-                optionalType,
-                FileParser._parseParameters(node),
-                type,
-                FileParser._parseTypeParameters(node),
-                isKey)
-            : new Attribute(memberName, optionalType, type, isKey);
+        switch (node.kind) {
+            case ts.SyntaxKind.MethodSignature:
+            case ts.SyntaxKind.MethodDeclaration:
+                return new Method(
+                    memberName,
+                    modifiers,
+                    FileParser._parseParameters(node),
+                    type,
+                    FileParser._parseTypeParameters(node),
+                    isKey);
+            case ts.SyntaxKind.GetAccessor: return new Getter(memberName, modifiers, type);
+            case ts.SyntaxKind.SetAccessor: return new Setter(memberName, modifiers, FileParser._parseParameters(node));
+            case ts.SyntaxKind.Constructor:
+                return new Constructor(
+                    modifiers,
+                    FileParser._parseParameters(node),
+                    FileParser._parseTypeParameters(node)
+                );
+            case ts.SyntaxKind.PropertySignature:
+            case ts.SyntaxKind.PropertyDeclaration:
+                return new Attribute(memberName, modifiers, type, isKey);
+            default: throw new Error('Unknown member!');
+        }
+    }
+
+    private static _parseModifiers(node: any): IModifier[] {
+        if (!node || !Array.isArray(node.modifiers)) {
+            return [];
+        }
+
+        return node.modifiers.map((modifier: any): IModifier|null => {
+            switch (modifier.kind) {
+                case ts.SyntaxKind.PrivateKeyword: return IModifier.PRIVATE;
+                case ts.SyntaxKind.ProtectedKeyword: return IModifier.PROTECTED;
+                case ts.SyntaxKind.PublicKeyword: return IModifier.PUBLIC;
+                case ts.SyntaxKind.StaticKeyword: return IModifier.STATIC;
+                case ts.SyntaxKind.AbstractKeyword: return IModifier.ABSTRACT;
+                case ts.SyntaxKind.ReadonlyKeyword: return IModifier.READONLY;
+                default: return null;
+            }
+        }).filter((modifier: IModifier|null) => modifier !== null);
     }
 
     private static _parseNamedImport(node: any): IImport {
@@ -189,7 +265,7 @@ export default abstract class FileParser {
             return [];
         }
 
-        return node.typeParameters.map((param: any) => 
+        return node.typeParameters.map((param: any) =>
             new ReferenceType(param.name.text, FileParser._parseTypeParameters(param)));
     }
 }

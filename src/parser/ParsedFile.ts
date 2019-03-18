@@ -23,6 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import Class from './Class';
 import Enum from './Enum';
 import Export from './Export';
 import Import from './Import';
@@ -30,6 +31,7 @@ import Interface from './Interface';
 import TypeDefinition from './TypeDefinition';
 
 export default class ParsedFile {
+    private _classes: Class[];
     private _defaultExport?: Export;
     private _enums: Enum[];
     private _exports: Export[];
@@ -38,11 +40,16 @@ export default class ParsedFile {
     private _types: TypeDefinition[];
 
     constructor() {
+        this._classes = [];
         this._imports = [];
         this._enums = [];
         this._exports = [];
         this._interfaces = [];
         this._types = [];
+    }
+
+    addClass(classStatement: Class): void {
+        this._classes.push(classStatement);
     }
 
     addDefaultExport(defaultExport: Export): void {

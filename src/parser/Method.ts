@@ -23,8 +23,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Member, { IKeyName, MemberType } from './Member';
+import Member, { IKeyName } from './Member';
 
+import IModifier from './IModifier';
 import Parameter from './Parameter';
 import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
@@ -35,13 +36,13 @@ export default class Method extends Member {
 
     constructor(
         name: string|IKeyName,
-        memberTypes: MemberType[],
+        modifiers: IModifier[],
         parameters: Parameter[],
         type: Type,
         typeParameters: ReferenceType[],
         isKey: boolean = false
     ) {
-        super(name, memberTypes, type, isKey);
+        super(name, modifiers, type, isKey);
 
         this._parameters = parameters;
         this._typeParameters = typeParameters;

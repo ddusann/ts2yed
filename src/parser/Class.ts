@@ -23,19 +23,31 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import IModifier from './IModifier';
 import Member from './Member';
 import ReferenceType from './types/ReferenceType';
 
-export default class Interface {
+export default class Class {
     private _extensions: ReferenceType[];
+    private _implementations: ReferenceType[];
     private _members: Member[];
+    private _modifiers: IModifier[];
     private _name: string;
     private _typeParameters: ReferenceType[];
 
-    constructor(name: string, members: Member[], extensions: ReferenceType[], typeParameters: ReferenceType[]) {
+    constructor(
+        name: string,
+        members: Member[],
+        modifiers: IModifier[],
+        extensions: ReferenceType[],
+        implementations: ReferenceType[],
+        typeParameters: ReferenceType[]
+    ) {
         this._name = name;
         this._members = members;
+        this._modifiers = modifiers;
         this._extensions = extensions;
+        this._implementations = implementations;
         this._typeParameters = typeParameters;
     }
 }

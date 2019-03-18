@@ -23,19 +23,25 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Member from './Member';
+import Member, { IKeyName } from './Member';
+
+import IModifier from './IModifier';
+import NotDefinedType from './types/NotDefinedType';
+import Parameter from './Parameter';
 import ReferenceType from './types/ReferenceType';
 
-export default class Interface {
-    private _extensions: ReferenceType[];
-    private _members: Member[];
-    private _name: string;
+export default class Constructor extends Member {
+    private _parameters: Parameter[];
     private _typeParameters: ReferenceType[];
 
-    constructor(name: string, members: Member[], extensions: ReferenceType[], typeParameters: ReferenceType[]) {
-        this._name = name;
-        this._members = members;
-        this._extensions = extensions;
+    constructor(
+        modifiers: IModifier[],
+        parameters: Parameter[],
+        typeParameters: ReferenceType[]
+    ) {
+        super('constructor', modifiers, new NotDefinedType());
+
+        this._parameters = parameters;
         this._typeParameters = typeParameters;
     }
 }

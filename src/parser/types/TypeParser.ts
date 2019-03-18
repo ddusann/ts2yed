@@ -28,7 +28,7 @@ import Attribute from '../Attribute';
 import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
-import { MemberType } from '../Member';
+import IModifier from '../IModifier';
 import NumberType from './NumberType';
 import ObjectType from './ObjectType';
 import Parameter from '../Parameter';
@@ -36,6 +36,7 @@ import ReferenceType from './ReferenceType';
 import StringType from './StringType';
 import Type from './Type';
 import UnionType from './UnionType';
+import VoidType from './VoidType';
 import ts from 'typescript';
 
 export default abstract class TypeParser {
@@ -58,6 +59,7 @@ export default abstract class TypeParser {
             case ts.SyntaxKind.UnionType: return new UnionType(TypeParser._parseUnionTypes(node));
             case ts.SyntaxKind.IntersectionType: return new UnionType(TypeParser._parseIntersectionTypes(node));
             case ts.SyntaxKind.ConditionalType: return TypeParser._parseConditionType(node);
+            case ts.SyntaxKind.VoidKeyword: return new VoidType();
             default: throw new Error('Unknown type!');
         }
     }
@@ -71,7 +73,7 @@ export default abstract class TypeParser {
             const name = member.name.text;
             const optional = !!member.questionToken;
             const type = TypeParser.parse(member.type);
-            const flags = optional ? [MemberType.OPTIONAL] : [];
+            const flags = optional ? [IModifier.OPTIONAL] : [];
             return new Attribute(name, flags, type);
         });
     }

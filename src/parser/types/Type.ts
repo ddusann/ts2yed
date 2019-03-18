@@ -34,7 +34,8 @@ export enum TypeCategory {
     VOID,
     UNION,
     INTERSECTION,
-    CONDITION
+    CONDITION,
+    NOT_DEFINED
 }
 
 export default abstract class Type {
