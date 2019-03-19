@@ -53,8 +53,8 @@ export default abstract class TypeParser {
                 TypeParser._parseTypeParameters(node)
             );
             case ts.SyntaxKind.TypeReference: return new ReferenceType(
-                node.typeName.text,
-                this._parseTypeParameters(node)
+                TypeParser._parseName(node.typeName),
+                TypeParser._parseTypeParameters(node)
             );
             case ts.SyntaxKind.UnionType: return new UnionType(TypeParser._parseUnionTypes(node));
             case ts.SyntaxKind.IntersectionType: return new UnionType(TypeParser._parseIntersectionTypes(node));
@@ -97,6 +97,16 @@ export default abstract class TypeParser {
         }
 
         return node.types.map((type: any) => TypeParser.parse(type));
+    }
+
+    private static _parseName(node: any): string {
+        if (node.kind === ts.SyntaxKind.QualifiedName) {
+            const left = TypeParser._parseName(node.left);
+            const right = TypeParser._parseName(node.right);
+            return `${left}.${right}`;
+        }
+
+        return node.text;
     }
 
     private static _parseParameters(node: any): Parameter[] {
