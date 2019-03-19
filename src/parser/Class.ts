@@ -50,4 +50,8 @@ export default class Class {
         this._implementations = implementations;
         this._typeParameters = typeParameters;
     }
+
+    getName(): string {
+        return this._name;
+    }
 }

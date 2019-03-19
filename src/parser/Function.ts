@@ -33,6 +33,8 @@ export interface IKeyName {
 }
 
 export default class Function {
+    private static _anonymousCounter = 0;
+
     private _name?: string;
     private _parameters: Parameter[];
     private _type: Type;
@@ -48,5 +50,9 @@ export default class Function {
         this._type = type;
         this._parameters = parameters;
         this._typeParameters = typeParameters;
+    }
+
+    getName(): string {
+        return this._name ? this._name : `_anonymous_${++Function._anonymousCounter}_`;
     }
 }

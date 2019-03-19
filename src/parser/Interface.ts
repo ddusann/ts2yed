@@ -38,4 +38,8 @@ export default class Interface {
         this._extensions = extensions;
         this._typeParameters = typeParameters;
     }
+
+    getName(): string {
+        return this._name;
+    }
 }

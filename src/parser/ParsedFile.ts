@@ -31,6 +31,8 @@ import Import from './Import';
 import Interface from './Interface';
 import TypeDefinition from './TypeDefinition';
 
+type FileEntity = Class|Enum|FunctionDefinition|Import|Interface|TypeDefinition;
+
 export default class ParsedFile {
     private _classes: Class[];
     private _defaultExport?: Export;
@@ -39,6 +41,7 @@ export default class ParsedFile {
     private _functions: FunctionDefinition[];
     private _imports: Import[];
     private _interfaces: Interface[];
+    private _mappedObjects: Map<string, FileEntity>;
     private _types: TypeDefinition[];
 
     constructor() {
@@ -48,11 +51,13 @@ export default class ParsedFile {
         this._exports = [];
         this._functions = [];
         this._interfaces = [];
+        this._mappedObjects = new Map<string, FileEntity>();
         this._types = [];
     }
 
     addClass(classStatement: Class): void {
         this._classes.push(classStatement);
+        this._mappedObjects.set(classStatement.getName(), classStatement);
     }
 
     addDefaultExport(defaultExport: Export): void {
@@ -61,6 +66,7 @@ export default class ParsedFile {
 
     addEnum(enumStatement: Enum): void {
         this._enums.push(enumStatement);
+        this._mappedObjects.set(enumStatement.getName(), enumStatement);
     }
 
     addExport(exportStatement: Export): void {
@@ -69,17 +75,25 @@ export default class ParsedFile {
 
     addFunction(functionStatement: FunctionDefinition): void {
         this._functions.push(functionStatement);
+        this._mappedObjects.set(functionStatement.getName(), functionStatement);
     }
 
     addImport(importStatement: Import): void {
         this._imports.push(importStatement);
+        importStatement.getNames().forEach(name => this._mappedObjects.set(name, importStatement));
     }
 
     addInterface(interfaceStatement: Interface) {
         this._interfaces.push(interfaceStatement);
+        this._mappedObjects.set(interfaceStatement.getName(), interfaceStatement);
     }
 
     addType(type: TypeDefinition): void {
         this._types.push(type);
+        this._mappedObjects.set(type.getName(), type);
+    }
+
+    getEntity(name: string): FileEntity|undefined {
+        return this._mappedObjects.get(name);
     }
 }

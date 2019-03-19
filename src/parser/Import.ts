@@ -38,4 +38,16 @@ export default class Import {
         this._defaultImport = defaultImport;
         this._imports = imports;
     }
+
+    getNames(): string[] {
+        const names: string[] = [];
+
+        if (this._defaultImport) {
+            names.push(this._defaultImport);
+        }
+
+        names.splice(names.length, 0, ...this._imports.map(importNames => importNames.usedName));
+
+        return names;
+    }
 }

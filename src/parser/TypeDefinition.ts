@@ -36,4 +36,8 @@ export default class TypeDefinition {
         this._type = type;
         this._typeParameters = typeParameters;
     }
+
+    getName(): string {
+        return this._name;
+    }
 }

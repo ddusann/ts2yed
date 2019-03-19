@@ -31,4 +31,8 @@ export default class Enum {
         this._name = name;
         this._values = values;
     }
+
+    getName(): string {
+        return this._name;
+    }
 }
