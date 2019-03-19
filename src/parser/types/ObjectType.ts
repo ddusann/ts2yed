@@ -36,7 +36,18 @@ export default class ObjectType extends Type {
         this._attributes = attributes;
     }
 
+    getReferenceTypes(): Type[] {
+        return this._attributes.map(attr => attr.getReferenceTypes()).reduce((acc, type) => acc.concat(type), []);
+    }
+
     getType(): TypeCategory {
         return TypeCategory.OBJECT;
+    }
+
+    getTypeName(): string {
+        const attributes = this._attributes
+            .map(attr => `${attr.getName()}: ${attr.getType().getTypeName()}`)
+            .join(', ');
+        return `{${attributes}}`;
     }
 }

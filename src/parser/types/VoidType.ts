@@ -26,7 +26,15 @@
 import Type, { TypeCategory } from './Type';
 
 export default class VoidType extends Type {
+    getReferenceTypes(): Type[] {
+        return [];
+    }
+
     getType(): TypeCategory {
         return TypeCategory.VOID;
+    }
+
+    getTypeName(): string {
+        return 'void';
     }
 }

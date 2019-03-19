@@ -26,7 +26,15 @@
 import Type, { TypeCategory } from './Type';
 
 export default class BooleanType extends Type {
+    getReferenceTypes(): Type[] {
+        return [];
+    }
+
     getType(): TypeCategory {
         return TypeCategory.BOOLEAN;
+    }
+
+    getTypeName(): string {
+        return 'boolean';
     }
 }

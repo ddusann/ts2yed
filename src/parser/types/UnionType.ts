@@ -34,7 +34,15 @@ export default class UnionType extends Type {
         this._types = types;
     }
 
+    getReferenceTypes(): Type[] {
+        return this._types.map(type => type.getReferenceTypes()).reduce((acc, type) => acc.concat(type), []);
+    }
+
     getType(): TypeCategory {
         return TypeCategory.UNION;
+    }
+
+    getTypeName(): string {
+        return this._types.map(type => type.getTypeName()).join(' | ');
     }
 }

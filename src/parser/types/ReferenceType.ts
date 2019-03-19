@@ -36,7 +36,17 @@ export default class ReferenceType extends Type {
         this._typeParameters = typeParameters;
     }
 
+    getReferenceTypes(): Type[] {
+        return [this];
+    }
+
     getType(): TypeCategory {
         return TypeCategory.REFERENCE;
+    }
+
+    getTypeName(): string {
+        const typeParameterList = this._typeParameters.map(param => param.getTypeName()).join(', ');
+        const typeParameters = typeParameterList ? `<${typeParameterList}>` : '';
+        return `${this._name}${typeParameters}`;
     }
 }

@@ -40,7 +40,20 @@ export default class ConditionType extends Type {
         this._trueType = trueType;
     }
 
+    getReferenceTypes(): Type[] {
+        const checked = this._checkedType.getReferenceTypes();
+        const referenceTypes = this._extendsType.getReferenceTypes()
+            .concat(this._trueType.getReferenceTypes())
+            .concat(this._falseType.getReferenceTypes());
+        return referenceTypes.filter(type => !checked.includes(type));
+    }
+
     getType(): TypeCategory {
         return TypeCategory.CONDITION;
+    }
+
+    getTypeName(): string {
+        return `${this._checkedType.getTypeName()} extends ${this._extendsType.getTypeName()} ` +
+            `? ${this._trueType.getTypeName()} : ${this._falseType.getTypeName()}`;
     }
 }

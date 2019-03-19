@@ -26,6 +26,7 @@
 import Type, { TypeCategory } from './Type';
 
 import Parameter from '../Parameter';
+import { join } from 'path';
 
 export default class FunctionType extends Type {
     private _parameters: Parameter[];
@@ -40,7 +41,25 @@ export default class FunctionType extends Type {
         this._typeParameters = typeParameters;
     }
 
+    getReferenceTypes(): Type[] {
+        return this._returnType.getReferenceTypes()
+            .concat(this._typeParameters.map(param => param.getReferenceTypes())
+                .concat(this._parameters.map(parameter => parameter.getReferenceTypes()))
+                .reduce((acc, types) => acc.concat(types), [])
+            );
+    }
+
     getType(): TypeCategory {
         return TypeCategory.FUNCTION;
+    }
+
+    getTypeName(): string {
+        const parameters = this._parameters
+            .map(param => `${param.getName()}: ${param.getType().getTypeName()}`)
+            .join(', ');
+        const typeParameterList = this._typeParameters.map(param => param.getTypeName()).join(', ');
+        const typeParameters = typeParameterList ? `<${typeParameterList}>` : '';
+
+        return `${typeParameters}(${parameters}) => ${this._returnType.getTypeName()}`;
     }
 }

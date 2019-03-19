@@ -34,7 +34,15 @@ export default class ArrayType extends Type {
         this._arrayType = arrayType;
     }
 
+    getReferenceTypes(): Type[] {
+        return this._arrayType.getReferenceTypes();
+    }
+
     getType(): TypeCategory {
         return TypeCategory.ARRAY;
+    }
+
+    getTypeName(): string {
+        return this._arrayType.getTypeName() + '[]';
     }
 }

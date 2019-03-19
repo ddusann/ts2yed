@@ -26,7 +26,15 @@
 import Type, { TypeCategory } from './Type';
 
 export default class NumberType extends Type {
+    getReferenceTypes(): Type[] {
+        return [];
+    }
+
     getType(): TypeCategory {
         return TypeCategory.NUMBER;
+    }
+
+    getTypeName(): string {
+        return 'number';
     }
 }

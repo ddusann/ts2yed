@@ -39,5 +39,7 @@ export enum TypeCategory {
 }
 
 export default abstract class Type {
+    abstract getReferenceTypes(): Type[];
     abstract getType(): TypeCategory;
+    abstract getTypeName(): string;
 }

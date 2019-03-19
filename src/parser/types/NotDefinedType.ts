@@ -26,7 +26,15 @@
 import Type, { TypeCategory } from './Type';
 
 export default class NotDefinedType extends Type {
+    getReferenceTypes(): Type[] {
+        return [];
+    }
+
     getType(): TypeCategory {
         return TypeCategory.NOT_DEFINED;
+    }
+
+    getTypeName(): string {
+        return '';
     }
 }

@@ -26,7 +26,15 @@
 import Type, { TypeCategory } from './Type';
 
 export default class StringType extends Type {
+    getReferenceTypes(): Type[] {
+        return [];
+    }
+
     getType(): TypeCategory {
         return TypeCategory.STRING;
+    }
+
+    getTypeName(): string {
+        return 'string';
     }
 }
