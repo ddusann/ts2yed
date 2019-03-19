@@ -39,6 +39,20 @@ export enum TypeCategory {
 }
 
 export default abstract class Type {
+    static makeReferenceTypeUnique(references: Type[]) {
+        const usedTypes: string[] = [];
+
+        return references.filter(reference => {
+            const referenceTypeName = reference.getTypeName();
+            if (usedTypes.includes(referenceTypeName)) {
+                return false;
+            }
+
+            usedTypes.push(referenceTypeName);
+            return true;
+        });
+    }
+
     abstract getReferenceTypes(): Type[];
     abstract getType(): TypeCategory;
     abstract getTypeName(): string;

@@ -45,7 +45,7 @@ export default class ConditionType extends Type {
         const referenceTypes = this._extendsType.getReferenceTypes()
             .concat(this._trueType.getReferenceTypes())
             .concat(this._falseType.getReferenceTypes());
-        return referenceTypes.filter(type => !checked.includes(type));
+        return Type.makeReferenceTypeUnique(referenceTypes.filter(type => !checked.includes(type)));
     }
 
     getType(): TypeCategory {

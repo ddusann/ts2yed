@@ -42,11 +42,12 @@ export default class FunctionType extends Type {
     }
 
     getReferenceTypes(): Type[] {
-        return this._returnType.getReferenceTypes()
+        return Type.makeReferenceTypeUnique(this._returnType.getReferenceTypes()
             .concat(this._typeParameters.map(param => param.getReferenceTypes())
                 .concat(this._parameters.map(parameter => parameter.getReferenceTypes()))
                 .reduce((acc, types) => acc.concat(types), [])
-            );
+            )
+        );
     }
 
     getType(): TypeCategory {

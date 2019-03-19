@@ -37,7 +37,9 @@ export default class ObjectType extends Type {
     }
 
     getReferenceTypes(): Type[] {
-        return this._attributes.map(attr => attr.getReferenceTypes()).reduce((acc, type) => acc.concat(type), []);
+        return Type.makeReferenceTypeUnique(
+            this._attributes.map(attr => attr.getReferenceTypes()).reduce((acc, type) => acc.concat(type), [])
+        );
     }
 
     getType(): TypeCategory {
