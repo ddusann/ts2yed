@@ -37,7 +37,7 @@ interface IFileContent {
     fileName: FileName;
 }
 
-interface IParsedFile {
+export interface IParsedFile {
     file: ParsedFile;
     fileName: FileName;
 }
