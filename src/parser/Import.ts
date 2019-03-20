@@ -39,6 +39,18 @@ export default class Import {
         this._imports = imports;
     }
 
+    getDefaultImport(): string|undefined {
+        return this._defaultImport;
+    }
+
+    getExportedNames(): string[] {
+        return this._imports.map(importNames => importNames.originalName);
+    }
+
+    getFileName(): string {
+        return this._fileName;
+    }
+
     getNames(): string[] {
         const names: string[] = [];
 
@@ -49,5 +61,10 @@ export default class Import {
         names.splice(names.length, 0, ...this._imports.map(importNames => importNames.usedName));
 
         return names;
+    }
+
+    unalias(name: string): string {
+        const importWithName = this._imports.find(imp => imp.usedName === name);
+        return importWithName ? importWithName.originalName : name;
     }
 }

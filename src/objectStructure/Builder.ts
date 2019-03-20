@@ -23,26 +23,108 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import ParsedFile, { FileEntity } from '../parser/ParsedFile';
 import Parser, { IParsedFile } from '../parser/Parser';
 
 import Class from './Class';
+import FileDependency from './FileDependency';
+import FileEntityDependency from './FileEntityDependency';
+import ParsedClass from '../parser/Class';
+import Store from './Store';
 import fs from 'fs';
 import path from 'path';
+
+type FileName = string;
+
+interface IDependency {
+    dependencies: FileName[];
+    entity: FileEntity;
+}
 
 export default class Builder {
     private _classes: Class[];
     private _directory: string;
+    private _entityStore: Store;
     private _files: IParsedFile[];
 
     constructor(directory: string) {
         this._classes = [];
         this._directory = path.isAbsolute(directory) ? directory : path.join(process.cwd(), directory);
+        this._entityStore = new Store();
         this._files = [];
     }
 
     async parse(): Promise<void> {
-        const fileList = await this._getFileList(this._directory);
-        this._files = await new Parser(fileList).getFiles();
+        const sourceFileList = await this._getFileList(this._directory);
+        this._files = await new Parser(sourceFileList).getFiles();
+        const tsFileList = new FileDependency();
+        this._files.forEach(file => {
+            tsFileList.addDependencies(
+                file.fileName,
+                this._getAbsolutePaths(path.dirname(file.fileName), file.file.getDependencyFiles())
+            );
+        });
+
+        while (tsFileList.hasFile()) {
+            const fileName = tsFileList.getFile();
+            this._addImportsIntoStore(fileName);
+            const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
+            const fileEntityDependencies = new FileEntityDependency(parsedFile);
+            while (fileEntityDependencies.hasSymbols()) {
+                const fileEntitySymbol = fileEntityDependencies.getSymbol();
+                const entity = parsedFile.getEntity(fileEntitySymbol);
+                if (!entity) {
+                    throw new Error('Unknown entity!');
+                }
+
+                this._addEntity(fileName, entity);
+            }
+        }
+    }
+
+    private _addEntity(fileName: FileName, entity: FileEntity) {
+        if (entity instanceof ParsedClass) {
+            const newClass = new Class(entity.getName());
+            this._entityStore.put(fileName, entity.getName(), newClass);
+
+            const usages = entity.getUsages();
+            usages.forEach(usage => {
+                const usageObject = this._entityStore.get(fileName, usage.getTypeName());
+                if (!usageObject) {
+                    throw new Error(`'${usage.getTypeName()}' object is not parsed yet!`);
+                }
+                newClass.addUsage(usageObject);
+            });
+        }
+    }
+
+    private _addImportsIntoStore(fileName: string) {
+        const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
+        parsedFile.getImports().forEach(imp => {
+            const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [imp.getFileName()])[0];
+            const defaultImport = imp.getDefaultImport();
+            if (defaultImport) {
+                const importedParsedFileObj = this._files.find(file => file.fileName === importFilePath);
+                if (!importedParsedFileObj) {
+                    throw new Error(`Unknown file '${importFilePath}'!`);
+                }
+                const importedParsedFile = importedParsedFileObj.file;
+                const importedParsedFileDefaultExport = importedParsedFile.getDefaultExport();
+                if (importedParsedFileDefaultExport) {
+                    const builtObject = this._entityStore.get(importFilePath, importedParsedFileDefaultExport);
+                    if (!builtObject) {
+                        throw new Error('Default export not found!');
+                    }
+                    this._entityStore.put(fileName, defaultImport, builtObject);
+                }
+            }
+        });
+    }
+
+    private _getAbsolutePaths(fileDirectory: string, paths: string[]): string[] {
+        return paths.map(usedPath => {
+            return this._getRealFileName(path.isAbsolute(usedPath) ? usedPath : path.join(fileDirectory, usedPath));
+        }).filter((usedPath): usedPath is string => usedPath !== undefined);
     }
 
     private async _getFileList(directory: string): Promise<string[]> {
@@ -64,5 +146,26 @@ export default class Builder {
                 });
             });
         });
+    }
+
+    private _getRealFileName(fileName: string): string|undefined {
+        const supportedExtensions = ['.ts'];
+        if (fs.existsSync(fileName)) {
+            return fileName;
+        }
+
+        const fileNameObject = path.parse(fileName);
+        delete fileNameObject.base;
+        const correctExtension = supportedExtensions.find(extension => {
+            fileNameObject.ext = extension;
+            return fs.existsSync(path.format(fileNameObject));
+        });
+
+        if (!correctExtension) {
+            return undefined;
+        }
+
+        fileNameObject.ext = correctExtension;
+        return path.format(fileNameObject);
     }
 }

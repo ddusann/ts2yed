@@ -26,6 +26,7 @@
 import IModifier from './IModifier';
 import Member from './Member';
 import ReferenceType from './types/ReferenceType';
+import Type from './types/Type';
 
 export default class Class {
     private _extensions: ReferenceType[];
@@ -53,5 +54,11 @@ export default class Class {
 
     getName(): string {
         return this._name;
+    }
+
+    getUsages(): ReferenceType[] {
+        return Type.makeReferenceTypeUnique(
+            this._members.map(member => member.getReferenceTypes()).reduce((acc, types) => acc.concat(types), [])
+        ) as ReferenceType[];
     }
 }

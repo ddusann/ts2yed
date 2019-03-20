@@ -132,7 +132,7 @@ export default abstract class FileParser {
                 if (names.length === 0) {
                     throw new Error('Unknown default export');
                 }
-                file.addDefaultExport(names[0]);
+                file.addDefaultExport(new Export(names[0]));
             } else {
                 names.forEach((name: string) => {
                     file.addExport(new Export(name));

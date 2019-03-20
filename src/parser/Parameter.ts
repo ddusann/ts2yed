@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type from './types/Type';
+import Type, { TypeCategory } from './types/Type';
 
 export default class Parameter {
     private _name: string;
@@ -32,5 +32,17 @@ export default class Parameter {
     constructor(name: string, type: Type) {
         this._name = name;
         this._type = type;
+    }
+
+    getName(): string {
+        return this._name;
+    }
+
+    getReferenceTypes(): Type[] {
+        return this._type.getReferenceTypes();
+    }
+
+    getType(): Type {
+        return this._type;
     }
 }

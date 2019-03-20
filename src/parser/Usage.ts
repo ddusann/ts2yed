@@ -23,36 +23,22 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Member, { IKeyName } from './Member';
-
-import IModifier from './IModifier';
-import NotDefinedType from './types/NotDefinedType';
-import Parameter from './Parameter';
 import ReferenceType from './types/ReferenceType';
-import Type from './types/Type';
 
-export default class Constructor extends Member {
-    private _parameters: Parameter[];
-    private _typeParameters: ReferenceType[];
+export default class Usage {
+    private _fileName: string|null;
+    private _reference: ReferenceType;
 
-    constructor(
-        modifiers: IModifier[],
-        parameters: Parameter[],
-        typeParameters: ReferenceType[]
-    ) {
-        super('constructor', modifiers, new NotDefinedType());
-
-        this._parameters = parameters;
-        this._typeParameters = typeParameters;
+    constructor(reference: ReferenceType, fileName: string|null) {
+        this._fileName = fileName;
+        this._reference = reference;
     }
 
-    getReferenceTypes(): ReferenceType[] {
-        const superTypes = super.getReferenceTypes();
-        const constructorTypes = this._parameters.map(param => param.getReferenceTypes())
-            .concat(this._typeParameters.map(param => param.getReferenceTypes()))
-            .reduce((acc, types) => acc.concat(types), [])
-            .filter((type: Type): type is ReferenceType => type instanceof ReferenceType);
+    getName(): string|null {
+        return this._fileName;
+    }
 
-        return superTypes.concat(constructorTypes);
+    getReference(): ReferenceType {
+        return this._reference;
     }
 }

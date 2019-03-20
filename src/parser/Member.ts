@@ -24,6 +24,7 @@
  */
 
 import IModifier from './IModifier';
+import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
 
 export interface IKeyName {
@@ -31,7 +32,7 @@ export interface IKeyName {
     type: Type;
 }
 
-export default class Member {
+export default abstract class Member {
     private _isKey: boolean;
     private _memberTypes: IModifier[];
     private _name: string|IKeyName;
@@ -42,5 +43,18 @@ export default class Member {
         this._memberTypes = modifiers;
         this._type = type;
         this._isKey = isKey;
+    }
+
+    getName(): string {
+        return typeof this._name === 'string' ? this._name : `[${this._name.name}: ${this._name.type.getTypeName()}]`;
+    }
+
+    getReferenceTypes(): ReferenceType[] {
+        return this._type.getReferenceTypes()
+            .filter((type: Type): type is ReferenceType => type instanceof ReferenceType);
+    }
+
+    getType(): Type {
+        return this._type;
     }
 }

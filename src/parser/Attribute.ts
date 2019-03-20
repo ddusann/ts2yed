@@ -25,5 +25,4 @@
 
 import Member from './Member';
 
-export default class Attribute extends Member {
-}
+export default class Attribute extends Member {}

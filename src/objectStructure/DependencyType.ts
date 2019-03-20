@@ -23,38 +23,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Member, { IKeyName } from './Member';
-
-import IModifier from './IModifier';
-import Parameter from './Parameter';
-import ReferenceType from './types/ReferenceType';
-import Type from './types/Type';
-
-export default class Method extends Member {
-    private _parameters: Parameter[];
-    private _typeParameters: ReferenceType[];
-
-    constructor(
-        name: string|IKeyName,
-        modifiers: IModifier[],
-        parameters: Parameter[],
-        type: Type,
-        typeParameters: ReferenceType[],
-        isKey: boolean = false
-    ) {
-        super(name, modifiers, type, isKey);
-
-        this._parameters = parameters;
-        this._typeParameters = typeParameters;
-    }
-
-    getReferenceTypes(): ReferenceType[] {
-        const superTypes = super.getReferenceTypes();
-        const methodTypes = this._parameters.map(param => param.getReferenceTypes())
-            .reduce((acc, types) => acc.concat(types), [])
-            .filter((type: Type): type is ReferenceType => type instanceof ReferenceType)
-            .concat(this._typeParameters);
-
-        return superTypes.concat(methodTypes);
-    }
+enum DependencyType {
+    USAGE,
+    IMPLEMENTATION,
+    EXTENSION
 }
+
+export default DependencyType;

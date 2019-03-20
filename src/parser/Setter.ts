@@ -27,6 +27,8 @@ import Member, { IKeyName } from './Member';
 
 import IModifier from './IModifier';
 import Parameter from './Parameter';
+import ReferenceType from './types/ReferenceType';
+import Type from './types/Type';
 import VoidType from './types/VoidType';
 
 export default class Setter extends Member {
@@ -40,5 +42,14 @@ export default class Setter extends Member {
         super(name, modifiers, new VoidType());
 
         this._parameters = parameters;
+    }
+
+    getReferenceTypes(): ReferenceType[] {
+        const superTypes = super.getReferenceTypes();
+        const methodTypes = this._parameters.map(param => param.getReferenceTypes())
+            .reduce((acc, types) => acc.concat(types), [])
+            .filter((type: Type): type is ReferenceType => type instanceof ReferenceType);
+
+        return superTypes.concat(methodTypes);
     }
 }

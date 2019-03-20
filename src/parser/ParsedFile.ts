@@ -31,9 +31,10 @@ import Import from './Import';
 import Interface from './Interface';
 import TypeDefinition from './TypeDefinition';
 
-type FileEntity = Class|Enum|FunctionDefinition|Import|Interface|TypeDefinition;
+export type FileEntity = Class|Enum|FunctionDefinition|Import|Interface|TypeDefinition;
 
 export default class ParsedFile {
+    private _aliases: Map<string, string>;
     private _classes: Class[];
     private _defaultExport?: Export;
     private _enums: Enum[];
@@ -45,6 +46,7 @@ export default class ParsedFile {
     private _types: TypeDefinition[];
 
     constructor() {
+        this._aliases = new Map<string, string>();
         this._classes = [];
         this._imports = [];
         this._enums = [];
@@ -80,7 +82,14 @@ export default class ParsedFile {
 
     addImport(importStatement: Import): void {
         this._imports.push(importStatement);
-        importStatement.getNames().forEach(name => this._mappedObjects.set(name, importStatement));
+        const defaultImport = importStatement.getDefaultImport();
+        if (defaultImport) {
+            this._mappedObjects.set(defaultImport, importStatement);
+        }
+
+        importStatement.getExportedNames()
+            .map(name => this._aliases.has(name) ? this._aliases.get(name)! : name)
+            .forEach(name => this._mappedObjects.set(name, importStatement));
     }
 
     addInterface(interfaceStatement: Interface) {
@@ -93,7 +102,36 @@ export default class ParsedFile {
         this._mappedObjects.set(type.getName(), type);
     }
 
-    getEntity(name: string): FileEntity|undefined {
-        return this._mappedObjects.get(name);
+    getClasses(): Class[] {
+        return this._classes;
+    }
+
+    getDefaultExport(): string|undefined {
+        return this._defaultExport ? this._defaultExport.getName() : undefined;
+    }
+
+    getDependencyFiles(): string[] {
+        return this._imports.map(i => i.getFileName());
+    }
+
+    getEntity(name: string, checkAliases: boolean = false): FileEntity|undefined {
+        return this._mappedObjects.get((!checkAliases && this._aliases.has(name)) ? this._aliases.get(name)! : name);
+    }
+
+    getExportedSymbols(): string[] {
+        const exports = Array.from(this._exports);
+        if (this._defaultExport) {
+            exports.push(this._defaultExport);
+        }
+
+        return exports.map(exp => exp.getName());
+    }
+
+    getImports(): Import[] {
+        return this._imports;
+    }
+
+    getSymbolImport(sym: string): Import|undefined {
+        return this._imports.find(importStatement => importStatement.getNames().includes(sym));
     }
 }

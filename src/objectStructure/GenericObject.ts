@@ -23,6 +23,28 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export default abstract class Object {
+export default abstract class GenericObject {
+    private _extensions: GenericObject[];
+    private _usages: GenericObject[];
 
+    constructor() {
+        this._usages = [];
+        this._extensions = [];
+    }
+
+    addExtension(cls: GenericObject): void {
+        this._extensions.push(cls);
+    }
+
+    addUsage(obj: GenericObject): void {
+        this._usages.push(obj);
+    }
+
+    getExtensions(): GenericObject[] {
+        return this._extensions;
+    }
+
+    getUsages(): GenericObject[] {
+        return this._usages;
+    }
 }

@@ -29,12 +29,10 @@ import VisibilityType from './VisibilityType';
 
 export default class Class extends GenericObject {
     private _attributes: Property[];
-    private _extensions: Class[];
     private _isAbstract: boolean;
     private _isStatic: boolean;
     private _methods: Property[];
     private _name: string;
-    private _usages: GenericObject[];
     private _visibility: VisibilityType;
 
     constructor(name: string) {
@@ -42,8 +40,6 @@ export default class Class extends GenericObject {
 
         this._attributes = [];
         this._methods = [];
-        this._extensions = [];
-        this._usages = [];
         this._name = name;
         this._visibility = VisibilityType.PUBLIC;
         this._isAbstract = false;
@@ -54,28 +50,12 @@ export default class Class extends GenericObject {
         this._attributes.push(attribute);
     }
 
-    addExtension(cls: Class): void {
-        this._extensions.push(cls);
-    }
-
     addMethod(method: Property) {
         this._methods.push(method);
     }
 
-    addUsage(obj: GenericObject): void {
-        this._usages.push(obj);
-    }
-
-    getExtensions(): Class[] {
-        return this._extensions;
-    }
-
     getName(): string {
         return this._name;
-    }
-
-    getUsages(): GenericObject[] {
-        return this._usages;
     }
 
     getVisibility(): VisibilityType {

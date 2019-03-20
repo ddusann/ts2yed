@@ -23,36 +23,33 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Member, { IKeyName } from './Member';
+import GenericObject from "./GenericObject";
 
-import IModifier from './IModifier';
-import NotDefinedType from './types/NotDefinedType';
-import Parameter from './Parameter';
-import ReferenceType from './types/ReferenceType';
-import Type from './types/Type';
+type FileName = string;
 
-export default class Constructor extends Member {
-    private _parameters: Parameter[];
-    private _typeParameters: ReferenceType[];
+export default class Store {
+    private _entities: Map<FileName, Map<string, GenericObject>>;
 
-    constructor(
-        modifiers: IModifier[],
-        parameters: Parameter[],
-        typeParameters: ReferenceType[]
-    ) {
-        super('constructor', modifiers, new NotDefinedType());
-
-        this._parameters = parameters;
-        this._typeParameters = typeParameters;
+    constructor() {
+        this._entities = new Map<FileName, Map<string, GenericObject>>();
     }
 
-    getReferenceTypes(): ReferenceType[] {
-        const superTypes = super.getReferenceTypes();
-        const constructorTypes = this._parameters.map(param => param.getReferenceTypes())
-            .concat(this._typeParameters.map(param => param.getReferenceTypes()))
-            .reduce((acc, types) => acc.concat(types), [])
-            .filter((type: Type): type is ReferenceType => type instanceof ReferenceType);
+    get(fileName: FileName, entityName: string): GenericObject|undefined {
+        const file = this._entities.get(fileName);
+        if (!file) {
+            return undefined;
+        }
 
-        return superTypes.concat(constructorTypes);
+        return file.get(entityName);
+    }
+
+    put(fileName: FileName, entityName: string, entity: GenericObject) {
+        let file = this._entities.get(fileName);
+        if (!file) {
+            file = new Map<string, GenericObject>();
+            this._entities.set(fileName, file);
+        }
+
+        file.set(entityName, entity);
     }
 }
