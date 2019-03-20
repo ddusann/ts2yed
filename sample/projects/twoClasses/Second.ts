@@ -1,9 +1,11 @@
-import First from './First';
+import FFF from './First';
 
 export default class Second {
-    private _first: First;
+    private _anything: boolean;
+    private _first: FFF;
 
-    constructor(first: First) {
+    constructor(first: FFF) {
         this._first = first;
+        this._anything = false;
     }
 }

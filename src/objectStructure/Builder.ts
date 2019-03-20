@@ -27,8 +27,12 @@ import ParsedFile, { FileEntity } from '../parser/ParsedFile';
 import Parser, { IParsedFile } from '../parser/Parser';
 
 import Class from './Class';
+import Edge from '../outputBuilder/Edge';
 import FileDependency from './FileDependency';
 import FileEntityDependency from './FileEntityDependency';
+import GenericObject from './GenericObject';
+import Graph from '../outputBuilder/Graph';
+import Node from '../outputBuilder/Node';
 import ParsedClass from '../parser/Class';
 import Store from './Store';
 import fs from 'fs';
@@ -54,7 +58,7 @@ export default class Builder {
         this._files = [];
     }
 
-    async parse(): Promise<void> {
+    async parse(): Promise<Graph> {
         const sourceFileList = await this._getFileList(this._directory);
         this._files = await new Parser(sourceFileList).getFiles();
         const tsFileList = new FileDependency();
@@ -80,6 +84,28 @@ export default class Builder {
                 this._addEntity(fileName, entity);
             }
         }
+
+        const graph = new Graph();
+        const graphNodes = new Map<GenericObject, Node>();
+        this._entityStore.getClasses().forEach(cls => {
+            const graphClass = new Node(cls.getName());
+            graph.addNode(graphClass);
+            graphNodes.set(cls, graphClass);
+        });
+
+        this._entityStore.getAllEntities().forEach(entity => {
+            entity.getUsages().forEach(usage => {
+                const entityGraphNode = graphNodes.get(entity);
+                const usageGraphNode = graphNodes.get(usage);
+                if (!entityGraphNode || !usageGraphNode) {
+                    throw new Error('Graph nodes not found!');
+                }
+
+                graph.addEdge(new Edge(entityGraphNode, usageGraphNode, 'usage'));
+            });
+        });
+
+        return graph;
     }
 
     private _addEntity(fileName: FileName, entity: FileEntity) {

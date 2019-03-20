@@ -23,7 +23,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import GenericObject from "./GenericObject";
+import Class from './Class';
+import GenericObject from './GenericObject';
 
 type FileName = string;
 
@@ -41,6 +42,16 @@ export default class Store {
         }
 
         return file.get(entityName);
+    }
+
+    getAllEntities(): GenericObject[] {
+        return Array.from(this._entities.values())
+            .map(file => Array.from(file.values()))
+            .reduce((acc, val) => acc.concat(val), []);
+    }
+
+    getClasses(): Class[] {
+        return this.getAllEntities().filter((entity: GenericObject): entity is Class => entity instanceof Class);
     }
 
     put(fileName: FileName, entityName: string, entity: GenericObject) {
