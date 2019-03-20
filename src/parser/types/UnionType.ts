@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import Type, { IReplacement, TypeCategory } from './Type';
 
 export default class UnionType extends Type {
     private _types: Type[];
@@ -44,7 +44,7 @@ export default class UnionType extends Type {
         return TypeCategory.UNION;
     }
 
-    getTypeName(): string {
-        return this._types.map(type => type.getTypeName()).join(' | ');
+    getTypeName(replacements: IReplacement[]): string {
+        return this._types.map(type => type.getTypeName(replacements)).join(' | ');
     }
 }

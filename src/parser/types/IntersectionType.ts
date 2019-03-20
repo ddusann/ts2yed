@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import Type, { IReplacement, TypeCategory } from './Type';
 
 export default class IntersectionType extends Type {
     private _types: Type[];
@@ -42,7 +42,7 @@ export default class IntersectionType extends Type {
         return TypeCategory.INTERSECTION;
     }
 
-    getTypeName(): string {
-        return this._types.map(type => type.getTypeName()).join(' & ');
+    getTypeName(replacements: IReplacement[]): string {
+        return this._types.map(type => type.getTypeName(replacements)).join(' & ');
     }
 }

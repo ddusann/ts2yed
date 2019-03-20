@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import Type, { IReplacement, TypeCategory } from './Type';
 
 export default class ConditionType extends Type {
     private _checkedType: Type;
@@ -52,8 +52,9 @@ export default class ConditionType extends Type {
         return TypeCategory.CONDITION;
     }
 
-    getTypeName(): string {
-        return `${this._checkedType.getTypeName()} extends ${this._extendsType.getTypeName()} ` +
-            `? ${this._trueType.getTypeName()} : ${this._falseType.getTypeName()}`;
+    getTypeName(replacements: IReplacement[]): string {
+        return `${this._checkedType.getTypeName(replacements)} extends ` +
+            `${this._extendsType.getTypeName(replacements)} ` +
+            `? ${this._trueType.getTypeName(replacements)} : ${this._falseType.getTypeName(replacements)}`;
     }
 }

@@ -23,10 +23,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import * as _ from 'lodash';
+
+import Type, { IReplacement, TypeCategory } from './Type';
 
 import Parameter from '../Parameter';
-import { join } from 'path';
 
 export default class FunctionType extends Type {
     private _parameters: Parameter[];
@@ -54,13 +55,13 @@ export default class FunctionType extends Type {
         return TypeCategory.FUNCTION;
     }
 
-    getTypeName(): string {
+    getTypeName(replacements: IReplacement[]): string {
         const parameters = this._parameters
-            .map(param => `${param.getName()}: ${param.getType().getTypeName()}`)
+            .map(param => `${param.getName()}: ${param.getType().getTypeName(replacements)}`)
             .join(', ');
-        const typeParameterList = this._typeParameters.map(param => param.getTypeName()).join(', ');
+        const typeParameterList = this._typeParameters.map(param => param.getTypeName(replacements)).join(', ');
         const typeParameters = typeParameterList ? `<${typeParameterList}>` : '';
 
-        return `${typeParameters}(${parameters}) => ${this._returnType.getTypeName()}`;
+        return `${typeParameters}(${parameters}) => ${this._returnType.getTypeName(replacements)}`;
     }
 }

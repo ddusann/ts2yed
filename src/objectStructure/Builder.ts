@@ -32,6 +32,7 @@ import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
 import GenericObject from './GenericObject';
 import Graph from '../outputBuilder/Graph';
+import { IReplacement } from '../parser/types/Type';
 import Node from '../outputBuilder/Node';
 import OutputBuilderProperty from '../outputBuilder/Property';
 import ParsedClass from '../parser/Class';
@@ -74,7 +75,7 @@ export default class Builder {
 
         while (tsFileList.hasFile()) {
             const fileName = tsFileList.getFile();
-            this._addImportsIntoStore(fileName);
+            const replacements = this._addImportsIntoStore(fileName);
             const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
             const fileEntityDependencies = new FileEntityDependency(parsedFile);
             while (fileEntityDependencies.hasSymbols()) {
@@ -84,7 +85,7 @@ export default class Builder {
                     throw new Error('Unknown entity!');
                 }
 
-                this._addEntity(fileName, entity);
+                this._addEntity(fileName, entity, replacements);
             }
         }
 
@@ -111,39 +112,40 @@ export default class Builder {
         return graph;
     }
 
-    private _addEntity(fileName: FileName, entity: FileEntity) {
+    private _addEntity(fileName: FileName, entity: FileEntity, replacements: IReplacement[] = []) {
         if (entity instanceof ParsedClass) {
             const newClass = new Class(entity.getName());
             this._entityStore.put(fileName, entity.getName(), newClass);
 
             entity.getAttributes().forEach(attribute =>
                 newClass.addAttribute(new Property(
-                    attribute.getName(),
+                    attribute.getName(replacements),
                     VisibilityType.PUBLIC,
-                    attribute.getType().getTypeName())
+                    attribute.getType().getTypeName(replacements))
                 )
             );
 
             entity.getMethods().forEach(method =>
                 newClass.addMethod(new Property(
-                    method.getName(),
+                    method.getName(replacements),
                     VisibilityType.PUBLIC,
-                    method.getType().getTypeName())
+                    method.getType().getTypeName(replacements))
                 )
             );
 
             const usages = entity.getUsages();
             usages.forEach(usage => {
-                const usageObject = this._entityStore.get(fileName, usage.getTypeName());
+                const usageObject = this._entityStore.get(fileName, usage.getTypeName([]));
                 if (!usageObject) {
-                    throw new Error(`'${usage.getTypeName()}' object is not parsed yet!`);
+                    throw new Error(`'${usage.getTypeName([])}' object is not parsed yet!`);
                 }
                 newClass.addUsage(usageObject);
             });
         }
     }
 
-    private _addImportsIntoStore(fileName: string) {
+    private _addImportsIntoStore(fileName: string): IReplacement[] {
+        const replacements: IReplacement[] = [];
         const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
         parsedFile.getImports().forEach(imp => {
             const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [imp.getFileName()])[0];
@@ -156,6 +158,7 @@ export default class Builder {
                 const importedParsedFile = importedParsedFileObj.file;
                 const importedParsedFileDefaultExport = importedParsedFile.getDefaultExport();
                 if (importedParsedFileDefaultExport) {
+                    replacements.push({ from: defaultImport, to: importedParsedFileDefaultExport });
                     const builtObject = this._entityStore.get(importFilePath, importedParsedFileDefaultExport);
                     if (!builtObject) {
                         throw new Error('Default export not found!');
@@ -163,7 +166,10 @@ export default class Builder {
                     this._entityStore.put(fileName, defaultImport, builtObject);
                 }
             }
+            // TODO aliased imports
         });
+
+        return replacements;
     }
 
     private _createClassGraphNode(cls: Class): Node {

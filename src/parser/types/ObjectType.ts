@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import Type, { IReplacement, TypeCategory } from './Type';
 
 import Attribute from '../Attribute';
 
@@ -46,9 +46,9 @@ export default class ObjectType extends Type {
         return TypeCategory.OBJECT;
     }
 
-    getTypeName(): string {
+    getTypeName(replacements: IReplacement[]): string {
         const attributes = this._attributes
-            .map(attr => `${attr.getName()}: ${attr.getType().getTypeName()}`)
+            .map(attr => `${attr.getName(replacements)}: ${attr.getType().getTypeName(replacements)}`)
             .join(', ');
         return `{${attributes}}`;
     }

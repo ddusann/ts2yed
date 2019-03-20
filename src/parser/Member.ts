@@ -23,9 +23,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import Type, { IReplacement } from './types/Type';
+
 import IModifier from './IModifier';
 import ReferenceType from './types/ReferenceType';
-import Type from './types/Type';
 
 export interface IKeyName {
     name: string;
@@ -45,8 +46,10 @@ export default abstract class Member {
         this._isKey = isKey;
     }
 
-    getName(): string {
-        return typeof this._name === 'string' ? this._name : `[${this._name.name}: ${this._name.type.getTypeName()}]`;
+    getName(replacements: IReplacement[]): string {
+        return typeof this._name === 'string'
+            ? this._name
+            : `[${this._name.name}: ${this._name.type.getTypeName(replacements)}]`;
     }
 
     getReferenceTypes(): ReferenceType[] {

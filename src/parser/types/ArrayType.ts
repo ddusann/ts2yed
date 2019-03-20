@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import Type, { IReplacement, TypeCategory } from './Type';
 
 export default class ArrayType extends Type {
     private _arrayType: Type;
@@ -42,7 +42,7 @@ export default class ArrayType extends Type {
         return TypeCategory.ARRAY;
     }
 
-    getTypeName(): string {
-        return this._arrayType.getTypeName() + '[]';
+    getTypeName(replacements: IReplacement[]): string {
+        return this._arrayType.getTypeName(replacements) + '[]';
     }
 }

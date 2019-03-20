@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './Type';
+import Type, { IReplacement, TypeCategory } from './Type';
 
 export default class ReferenceType extends Type {
     private _name: string;
@@ -44,9 +44,10 @@ export default class ReferenceType extends Type {
         return TypeCategory.REFERENCE;
     }
 
-    getTypeName(): string {
-        const typeParameterList = this._typeParameters.map(param => param.getTypeName()).join(', ');
+    getTypeName(replacements: IReplacement[]): string {
+        const typeParameterList = this._typeParameters.map(param => param.getTypeName(replacements)).join(', ');
         const typeParameters = typeParameterList ? `<${typeParameterList}>` : '';
-        return `${this._name}${typeParameters}`;
+        const replacement = replacements.find(r => r.from === this._name);
+        return `${replacement ? replacement.to : this._name}${typeParameters}`;
     }
 }
