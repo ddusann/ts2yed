@@ -23,8 +23,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import Attribute from './Attribute';
 import IModifier from './IModifier';
 import Member from './Member';
+import Method from './Method';
 import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
 
@@ -50,6 +52,14 @@ export default class Class {
         this._extensions = extensions;
         this._implementations = implementations;
         this._typeParameters = typeParameters;
+    }
+
+    getAttributes(): Attribute[] {
+        return this._members.filter((member: Member): member is Attribute => member instanceof Attribute);
+    }
+
+    getMethods(): Method[] {
+        return this._members.filter((member: Member): member is Method => member instanceof Method);
     }
 
     getName(): string {

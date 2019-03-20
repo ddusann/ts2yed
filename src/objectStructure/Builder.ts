@@ -23,18 +23,21 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import ParsedFile, { FileEntity } from '../parser/ParsedFile';
 import Parser, { IParsedFile } from '../parser/Parser';
 
 import Class from './Class';
 import Edge from '../outputBuilder/Edge';
 import FileDependency from './FileDependency';
+import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
 import GenericObject from './GenericObject';
 import Graph from '../outputBuilder/Graph';
 import Node from '../outputBuilder/Node';
+import OutputBuilderProperty from '../outputBuilder/Property';
 import ParsedClass from '../parser/Class';
+import Property from './Property';
 import Store from './Store';
+import VisibilityType from './VisibilityType';
 import fs from 'fs';
 import path from 'path';
 
@@ -88,7 +91,7 @@ export default class Builder {
         const graph = new Graph();
         const graphNodes = new Map<GenericObject, Node>();
         this._entityStore.getClasses().forEach(cls => {
-            const graphClass = new Node(cls.getName());
+            const graphClass = this._createClassGraphNode(cls);
             graph.addNode(graphClass);
             graphNodes.set(cls, graphClass);
         });
@@ -112,6 +115,22 @@ export default class Builder {
         if (entity instanceof ParsedClass) {
             const newClass = new Class(entity.getName());
             this._entityStore.put(fileName, entity.getName(), newClass);
+
+            entity.getAttributes().forEach(attribute =>
+                newClass.addAttribute(new Property(
+                    attribute.getName(),
+                    VisibilityType.PUBLIC,
+                    attribute.getType().getTypeName())
+                )
+            );
+
+            entity.getMethods().forEach(method =>
+                newClass.addMethod(new Property(
+                    method.getName(),
+                    VisibilityType.PUBLIC,
+                    method.getType().getTypeName())
+                )
+            );
 
             const usages = entity.getUsages();
             usages.forEach(usage => {
@@ -145,6 +164,19 @@ export default class Builder {
                 }
             }
         });
+    }
+
+    private _createClassGraphNode(cls: Class): Node {
+        const node = new Node(cls.getName());
+
+        cls.getAttributes()
+            .forEach(attribute =>
+                node.addAttribute(new OutputBuilderProperty(attribute.getName(), 'public', attribute.getType())));
+
+        cls.getMethods()
+            .forEach(method => node.addMethod(new OutputBuilderProperty(method.getName(), 'public', method.getType())));
+
+        return node;
     }
 
     private _getAbsolutePaths(fileDirectory: string, paths: string[]): string[] {

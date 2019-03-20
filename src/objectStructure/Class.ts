@@ -54,6 +54,14 @@ export default class Class extends GenericObject {
         this._methods.push(method);
     }
 
+    getAttributes(): Property[] {
+        return this._attributes;
+    }
+
+    getMethods(): Property[] {
+        return this._methods;
+    }
+
     getName(): string {
         return this._name;
     }

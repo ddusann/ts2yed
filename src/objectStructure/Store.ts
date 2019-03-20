@@ -45,9 +45,9 @@ export default class Store {
     }
 
     getAllEntities(): GenericObject[] {
-        return Array.from(this._entities.values())
+        return [...new Set(Array.from(this._entities.values())
             .map(file => Array.from(file.values()))
-            .reduce((acc, val) => acc.concat(val), []);
+            .reduce((acc, val) => acc.concat(val), []))];
     }
 
     getClasses(): Class[] {

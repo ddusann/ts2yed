@@ -32,12 +32,12 @@ export default class Property {
     private _type: string;
     private _visibility: VisibilityType;
 
-    constructor() {
+    constructor(name: string, visibility: VisibilityType, type: string) {
         this._name = name;
-        this._visibility = VisibilityType.PUBLIC;
+        this._visibility = visibility;
         this._isAbstract = false;
         this._isStatic = false;
-        this._type = 'any';
+        this._type = type;
     }
 
     getName(): string {

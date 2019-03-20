@@ -25,7 +25,7 @@
 
 type Visibility = 'public'|'protected'|'private';
 
-export default class Attribute {
+export default class Property {
     private _label: string;
 
     constructor(name: string, visibility: Visibility = 'private', type?: string) {
