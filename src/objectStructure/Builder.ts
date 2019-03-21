@@ -116,7 +116,10 @@ export default class Builder {
 
     private _addEntity(fileName: FileName, entity: FileEntity, replacements: IReplacement[] = []) {
         if (entity instanceof ParsedClass) {
-            const newClass = new Class(entity.getName());
+            const typeList = entity.getTypeParameters().map(tp => tp.getTypeName([], false));
+            const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
+            const newClass = new Class(entity.getName() + typeListInString);
+
             this._entityStore.put(fileName, entity.getName(), newClass);
 
             newClass.setObjectParameters(entity.getTypeParameters().map(tp => tp.getTypeName([], false)));
