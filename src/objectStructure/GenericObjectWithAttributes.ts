@@ -28,11 +28,13 @@ import Property from './Property';
 
 export default class GenericObjectWithAttributes extends GenericObject {
     private _attributes: Property[];
+    private _objectParameters: string[];
 
     constructor() {
         super();
 
         this._attributes = [];
+        this._objectParameters = [];
     }
 
     addAttribute(attribute: Property) {
@@ -41,5 +43,13 @@ export default class GenericObjectWithAttributes extends GenericObject {
 
     getAttributes(): Property[] {
         return this._attributes;
+    }
+
+    getObjectParameters(): string[] {
+        return this._objectParameters;
+    }
+
+    setObjectParameters(parameters: string[]): void {
+        this._objectParameters = parameters;
     }
 }

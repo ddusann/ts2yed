@@ -23,17 +23,28 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+interface IReplacement {
+    from: string;
+    to: string;
+}
+
 export default abstract class GenericObject {
     private _extensions: GenericObject[];
+    private _replacements: IReplacement[];
     private _usages: GenericObject[];
 
     constructor() {
         this._usages = [];
         this._extensions = [];
+        this._replacements = [];
     }
 
     addExtension(cls: GenericObject): void {
         this._extensions.push(cls);
+    }
+
+    addReplacements(replacements: IReplacement[]): void {
+        this._replacements.splice(this._replacements.length, 0, ...replacements);
     }
 
     addUsage(obj: GenericObject): void {
@@ -42,6 +53,10 @@ export default abstract class GenericObject {
 
     getExtensions(): GenericObject[] {
         return this._extensions;
+    }
+
+    getReplacements(): IReplacement[] {
+        return this._replacements;
     }
 
     getUsages(): GenericObject[] {

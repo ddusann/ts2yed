@@ -49,7 +49,7 @@ export default abstract class Member {
     getName(replacements: IReplacement[]): string {
         return typeof this._name === 'string'
             ? this._name
-            : `[${this._name.name}: ${this._name.type.getTypeName(replacements)}]`;
+            : `[${this._name.name}: ${this._name.type.getTypeName(replacements, false)}]`;
     }
 
     getReferenceTypes(): ReferenceType[] {

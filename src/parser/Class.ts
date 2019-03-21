@@ -66,6 +66,10 @@ export default class Class {
         return this._name;
     }
 
+    getTypeParameters(): ReferenceType[] {
+        return this._typeParameters;
+    }
+
     getUsages(): ReferenceType[] {
         return Type.makeReferenceTypeUnique(
             this._members.map(member => member.getReferenceTypes()).reduce((acc, types) => acc.concat(types), [])

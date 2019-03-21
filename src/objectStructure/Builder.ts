@@ -23,6 +23,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import * as _ from 'lodash';
+
 import Parser, { IParsedFile } from '../parser/Parser';
 
 import Class from './Class';
@@ -117,28 +119,48 @@ export default class Builder {
             const newClass = new Class(entity.getName());
             this._entityStore.put(fileName, entity.getName(), newClass);
 
-            entity.getAttributes().forEach(attribute =>
+            newClass.setObjectParameters(entity.getTypeParameters().map(tp => tp.getTypeName([], false)));
+            const classTypeParameterReferences = _.chain(entity.getTypeParameters())
+                .map(tp => tp.getReferenceTypes())
+                .flatten()
+                .uniq()
+                .map(type => type.getTypeName([], false))
+                .value();
+
+            replacements = replacements.filter(replacement => !classTypeParameterReferences.includes(replacement.from));
+
+            entity.getAttributes().forEach(attribute => {
                 newClass.addAttribute(new Property(
                     attribute.getName(replacements),
                     VisibilityType.PUBLIC,
-                    attribute.getType().getTypeName(replacements))
-                )
-            );
+                    attribute.getType().getTypeName(replacements, false))
+                );
+            });
 
-            entity.getMethods().forEach(method =>
+            entity.getMethods().forEach(method => {
+                const methodTypeParameterReferences = _.chain(method.getTypeParameters())
+                    .map(tp => tp.getReferenceTypes())
+                    .flatten()
+                    .uniq()
+                    .map(type => type.getTypeName([], false))
+                    .value();
+                const methodReplacements = replacements.filter(replacement =>
+                    !methodTypeParameterReferences.includes(replacement.from));
+
                 newClass.addMethod(new Property(
-                    method.getName(replacements),
+                    method.getName(methodReplacements),
                     VisibilityType.PUBLIC,
-                    method.getType().getTypeName(replacements))
-                )
-            );
+                    method.getType().getTypeName(methodReplacements, false))
+                );
+            });
 
             const usages = entity.getUsages();
             usages.forEach(usage => {
-                const usageObject = this._entityStore.get(fileName, usage.getTypeName([]));
+                const usageObject = this._entityStore.get(fileName, usage.getTypeName([], false));
                 if (!usageObject) {
-                    throw new Error(`'${usage.getTypeName([])}' object is not parsed yet!`);
+                    return;
                 }
+
                 newClass.addUsage(usageObject);
             });
         }

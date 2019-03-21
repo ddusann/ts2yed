@@ -46,13 +46,16 @@ export default class FileEntityDependency {
             if (fileEntity instanceof Class) {
                 fileEntity.getUsages().forEach(entityReferences => {
                     entityReferences.getReferenceTypes().forEach(entityReference => {
-                        const entitySymbol = entityReference.getTypeName([]);
-                        this._dependencies.addRelation(fileExportSymbol, entitySymbol);
-
+                        const entitySymbol = entityReference.getTypeName([], true);
                         const entity = parsedFile.getEntity(entitySymbol);
-                        if (!(entity instanceof Import)) {
-                            if (!checkedSymbols.includes(entitySymbol) && !symbolsToCheck.includes(entitySymbol)) {
-                                symbolsToCheck.push(entitySymbol);
+
+                        if (entity) {
+                            this._dependencies.addRelation(fileExportSymbol, entitySymbol);
+
+                            if (!(entity instanceof Import)) {
+                                if (!checkedSymbols.includes(entitySymbol) && !symbolsToCheck.includes(entitySymbol)) {
+                                    symbolsToCheck.push(entitySymbol);
+                                }
                             }
                         }
                     });

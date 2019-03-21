@@ -57,4 +57,8 @@ export default class Method extends Member {
 
         return superTypes.concat(methodTypes);
     }
+
+    getTypeParameters(): ReferenceType[] {
+        return this._typeParameters;
+    }
 }
