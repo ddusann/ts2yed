@@ -23,44 +23,18 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION,
-    NOT_DEFINED,
-    NULL,
-    UNDEFINED
-}
+import Type, { TypeCategory } from './Type';
 
-export interface IReplacement {
-    from: string;
-    to: string;
-}
-
-export default abstract class Type {
-    static makeReferenceTypeUnique(references: Type[]) {
-        const usedTypes: string[] = [];
-
-        return references.filter(reference => {
-            const referenceTypeName = reference.getTypeName([]);
-            if (usedTypes.includes(referenceTypeName)) {
-                return false;
-            }
-
-            usedTypes.push(referenceTypeName);
-            return true;
-        });
+export default class UndefinedType extends Type {
+    getReferenceTypes(): Type[] {
+        return [];
     }
 
-    abstract getReferenceTypes(): Type[];
-    abstract getType(): TypeCategory;
-    abstract getTypeName(replacements: IReplacement[]): string;
+    getType(): TypeCategory {
+        return TypeCategory.UNDEFINED;
+    }
+
+    getTypeName(): string {
+        return 'undefined';
+    }
 }

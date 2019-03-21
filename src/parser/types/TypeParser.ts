@@ -29,12 +29,14 @@ import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
 import IModifier from '../IModifier';
+import NullType from './NullType';
 import NumberType from './NumberType';
 import ObjectType from './ObjectType';
 import Parameter from '../Parameter';
 import ReferenceType from './ReferenceType';
 import StringType from './StringType';
 import Type from './Type';
+import UndefinedType from './UndefinedType';
 import UnionType from './UnionType';
 import VoidType from './VoidType';
 import ts from 'typescript';
@@ -60,6 +62,8 @@ export default abstract class TypeParser {
             case ts.SyntaxKind.IntersectionType: return new UnionType(TypeParser._parseIntersectionTypes(node));
             case ts.SyntaxKind.ConditionalType: return TypeParser._parseConditionType(node);
             case ts.SyntaxKind.VoidKeyword: return new VoidType();
+            case ts.SyntaxKind.NullKeyword: return new NullType();
+            case ts.SyntaxKind.UndefinedKeyword: return new UndefinedType();
             default: throw new Error('Unknown type!');
         }
     }
