@@ -44,9 +44,11 @@ export default class ReferenceType extends Type {
         return TypeCategory.REFERENCE;
     }
 
-    getTypeName(replacements: IReplacement[]): string {
-        const typeParameterList = this._typeParameters.map(param => param.getTypeName(replacements)).join(', ');
-        const typeParameters = typeParameterList ? `<${typeParameterList}>` : '';
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        const typeParameterList = hideTypeParameters
+            ? []
+            : this._typeParameters.map(param => param.getTypeName(replacements, hideTypeParameters)).join(', ');
+        const typeParameters = typeParameterList.length > 0 ? `<${typeParameterList}>` : '';
         const replacement = replacements.find(r => r.from === this._name);
         return `${replacement ? replacement.to : this._name}${typeParameters}`;
     }

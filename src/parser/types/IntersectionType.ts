@@ -42,7 +42,7 @@ export default class IntersectionType extends Type {
         return TypeCategory.INTERSECTION;
     }
 
-    getTypeName(replacements: IReplacement[]): string {
-        return this._types.map(type => type.getTypeName(replacements)).join(' & ');
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        return this._types.map(type => type.getTypeName(replacements, hideTypeParameters)).join(' & ');
     }
 }

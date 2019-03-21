@@ -46,9 +46,10 @@ export default class ObjectType extends Type {
         return TypeCategory.OBJECT;
     }
 
-    getTypeName(replacements: IReplacement[]): string {
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
         const attributes = this._attributes
-            .map(attr => `${attr.getName(replacements)}: ${attr.getType().getTypeName(replacements)}`)
+            .map(attr => `${attr.getName(replacements)}: ` +
+                `${attr.getType().getTypeName(replacements, hideTypeParameters)}`)
             .join(', ');
         return `{${attributes}}`;
     }

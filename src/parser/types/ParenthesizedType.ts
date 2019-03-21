@@ -42,7 +42,7 @@ export default class ParenthesizedType extends Type {
         return TypeCategory.PARENTHESIS;
     }
 
-    getTypeName(replacements: IReplacement[]): string {
-        return `(${this._nestedType.getTypeName(replacements)})`;
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        return `(${this._nestedType.getTypeName(replacements, hideTypeParameters)})`;
     }
 }

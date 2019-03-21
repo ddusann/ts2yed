@@ -52,9 +52,10 @@ export default class ConditionType extends Type {
         return TypeCategory.CONDITION;
     }
 
-    getTypeName(replacements: IReplacement[]): string {
-        return `${this._checkedType.getTypeName(replacements)} extends ` +
-            `${this._extendsType.getTypeName(replacements)} ` +
-            `? ${this._trueType.getTypeName(replacements)} : ${this._falseType.getTypeName(replacements)}`;
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        return `${this._checkedType.getTypeName(replacements, hideTypeParameters)} extends ` +
+            `${this._extendsType.getTypeName(replacements, hideTypeParameters)} ` +
+            `? ${this._trueType.getTypeName(replacements, hideTypeParameters)} ` +
+            `: ${this._falseType.getTypeName(replacements, hideTypeParameters)}`;
     }
 }

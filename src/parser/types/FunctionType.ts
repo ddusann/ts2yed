@@ -55,13 +55,25 @@ export default class FunctionType extends Type {
         return TypeCategory.FUNCTION;
     }
 
-    getTypeName(replacements: IReplacement[]): string {
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        const typeParameterReferences = _.chain(this._typeParameters)
+            .map(tp => tp.getReferenceTypes())
+            .flatten()
+            .uniq()
+            .map(type => type.getTypeName([], hideTypeParameters))
+            .value();
+        const functionReplacements = replacements.filter(replacement =>
+            !typeParameterReferences.includes(replacement.from));
+
         const parameters = this._parameters
-            .map(param => `${param.getName()}: ${param.getType().getTypeName(replacements)}`)
+            .map(param => `${param.getName()}: ` +
+                `${param.getType().getTypeName(functionReplacements, hideTypeParameters)}`)
             .join(', ');
-        const typeParameterList = this._typeParameters.map(param => param.getTypeName(replacements)).join(', ');
+        const typeParameterList =
+            this._typeParameters.map(param => param.getTypeName(functionReplacements, hideTypeParameters)).join(', ');
         const typeParameters = typeParameterList ? `<${typeParameterList}>` : '';
 
-        return `${typeParameters}(${parameters}) => ${this._returnType.getTypeName(replacements)}`;
+        return `${typeParameters}(${parameters}) => ` +
+            `${this._returnType.getTypeName(functionReplacements, hideTypeParameters)}`;
     }
 }

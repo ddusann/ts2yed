@@ -37,7 +37,8 @@ export enum TypeCategory {
     CONDITION,
     NOT_DEFINED,
     NULL,
-    UNDEFINED
+    UNDEFINED,
+    PARENTHESIS
 }
 
 export interface IReplacement {
@@ -46,11 +47,11 @@ export interface IReplacement {
 }
 
 export default abstract class Type {
-    static makeReferenceTypeUnique(references: Type[]) {
+    static makeReferenceTypeUnique(references: Type[], hideTypeParameters: boolean = false) {
         const usedTypes: string[] = [];
 
         return references.filter(reference => {
-            const referenceTypeName = reference.getTypeName([]);
+            const referenceTypeName = reference.getTypeName([], hideTypeParameters);
             if (usedTypes.includes(referenceTypeName)) {
                 return false;
             }
@@ -62,5 +63,5 @@ export default abstract class Type {
 
     abstract getReferenceTypes(): Type[];
     abstract getType(): TypeCategory;
-    abstract getTypeName(replacements: IReplacement[]): string;
+    abstract getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string;
 }

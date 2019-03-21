@@ -42,7 +42,7 @@ export default class ArrayType extends Type {
         return TypeCategory.ARRAY;
     }
 
-    getTypeName(replacements: IReplacement[]): string {
-        return this._arrayType.getTypeName(replacements) + '[]';
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        return this._arrayType.getTypeName(replacements, hideTypeParameters) + '[]';
     }
 }

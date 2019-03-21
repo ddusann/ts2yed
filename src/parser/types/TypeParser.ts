@@ -33,6 +33,7 @@ import NullType from './NullType';
 import NumberType from './NumberType';
 import ObjectType from './ObjectType';
 import Parameter from '../Parameter';
+import ParenthesizedType from './ParenthesizedType';
 import ReferenceType from './ReferenceType';
 import StringType from './StringType';
 import Type from './Type';
@@ -64,6 +65,11 @@ export default abstract class TypeParser {
             case ts.SyntaxKind.VoidKeyword: return new VoidType();
             case ts.SyntaxKind.NullKeyword: return new NullType();
             case ts.SyntaxKind.UndefinedKeyword: return new UndefinedType();
+            case ts.SyntaxKind.TypeParameter: return new ReferenceType(
+                node.name.text,
+                TypeParser._parseTypeParameters(node)
+            );
+            case ts.SyntaxKind.ParenthesizedType: return new ParenthesizedType(TypeParser.parse(node.type));
             default: throw new Error('Unknown type!');
         }
     }
@@ -87,7 +93,7 @@ export default abstract class TypeParser {
             throw new Error('Unknown condition type');
         }
 
-        const checkedType = node.checkType.typeName.text;
+        const checkedType = TypeParser.parse(node.checkType);
         const extendedType = TypeParser.parse(node.extendsType);
         const trueType = TypeParser.parse(node.trueType);
         const falseType = TypeParser.parse(node.falseType);
