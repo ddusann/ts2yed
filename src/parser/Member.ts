@@ -27,6 +27,7 @@ import Type, { IReplacement } from './types/Type';
 
 import IModifier from './IModifier';
 import ReferenceType from './types/ReferenceType';
+import VisibilityType from '../VisibilityType';
 
 export interface IKeyName {
     name: string;
@@ -59,5 +60,17 @@ export default abstract class Member {
 
     getType(): Type {
         return this._type;
+    }
+
+    getVisibilityType(): VisibilityType|undefined {
+        if (this._memberTypes.includes(IModifier.PRIVATE)) {
+            return VisibilityType.PRIVATE;
+        } else if (this._memberTypes.includes(IModifier.PROTECTED)) {
+            return VisibilityType.PROTECTED;
+        } else if (this._memberTypes.includes(IModifier.PUBLIC)) {
+            return VisibilityType.PUBLIC;
+        } else {
+            return undefined;
+        }
     }
 }

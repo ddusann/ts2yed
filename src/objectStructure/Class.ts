@@ -25,7 +25,7 @@
 
 import GenericObjectWithAttributes from './GenericObjectWithAttributes';
 import Property from './Property';
-import VisibilityType from './VisibilityType';
+import VisibilityType from '../VisibilityType';
 
 export default class Class extends GenericObjectWithAttributes {
     private _isAbstract: boolean;

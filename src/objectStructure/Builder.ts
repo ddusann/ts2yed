@@ -40,7 +40,7 @@ import OutputBuilderProperty from '../outputBuilder/Property';
 import ParsedClass from '../parser/Class';
 import Property from './Property';
 import Store from './Store';
-import VisibilityType from './VisibilityType';
+import VisibilityType from '../VisibilityType';
 import fs from 'fs';
 import path from 'path';
 
@@ -135,7 +135,7 @@ export default class Builder {
             entity.getAttributes().forEach(attribute => {
                 newClass.addAttribute(new Property(
                     attribute.getName(replacements),
-                    VisibilityType.PUBLIC,
+                    attribute.getVisibilityType() || VisibilityType.PUBLIC,
                     attribute.getType().getTypeName(replacements, false))
                 );
             });
@@ -152,7 +152,7 @@ export default class Builder {
 
                 newClass.addMethod(new Property(
                     method.getName(methodReplacements),
-                    VisibilityType.PUBLIC,
+                    method.getVisibilityType() || VisibilityType.PUBLIC,
                     method.getType().getTypeName(methodReplacements, false))
                 );
             });
@@ -202,10 +202,18 @@ export default class Builder {
 
         cls.getAttributes()
             .forEach(attribute =>
-                node.addAttribute(new OutputBuilderProperty(attribute.getName(), 'public', attribute.getType())));
+                node.addAttribute(new OutputBuilderProperty(
+                    attribute.getName(),
+                    attribute.getVisibility(),
+                    attribute.getType()
+                )));
 
         cls.getMethods()
-            .forEach(method => node.addMethod(new OutputBuilderProperty(method.getName(), 'public', method.getType())));
+            .forEach(method => node.addMethod(
+                new OutputBuilderProperty(method.getName(),
+                method.getVisibility(),
+                method.getType()
+            )));
 
         return node;
     }

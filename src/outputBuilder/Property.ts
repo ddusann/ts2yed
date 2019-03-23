@@ -23,12 +23,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-type Visibility = 'public'|'protected'|'private';
+import VisibilityType from '../VisibilityType';
 
 export default class Property {
     private _label: string;
 
-    constructor(name: string, visibility: Visibility = 'private', type?: string) {
+    constructor(name: string, visibility: VisibilityType = VisibilityType.PRIVATE, type?: string) {
         this._label = `${this._getVisibilitySign(visibility)} ${name}`;
         if (type) {
             this._label = `${this._label}: ${type}`;
@@ -43,11 +43,11 @@ export default class Property {
         return 20 + this._label.length * 7.3;
     }
 
-    private _getVisibilitySign(visibility: Visibility) {
+    private _getVisibilitySign(visibility: VisibilityType) {
         switch (visibility) {
-            case 'public': return '+';
-            case 'protected': return '#';
-            case 'private': return '-';
+            case VisibilityType.PUBLIC: return '+';
+            case VisibilityType.PROTECTED: return '#';
+            case VisibilityType.PRIVATE: return '-';
         }
     }
 }

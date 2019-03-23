@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import VisibilityType from './VisibilityType';
+import VisibilityType from '../VisibilityType';
 
 export default class Property {
     private _isAbstract: boolean;
