@@ -110,43 +110,23 @@ export default class Builder {
     }
 
     private _addClass(fileName: FileName, parsedClass: ParsedClass, replacements: IReplacement[] = []): void {
-        const typeList = parsedClass.getTypeParameters().map(tp => tp.getTypeName([], false));
-        const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
-        const newClass = new Class(parsedClass.getName() + typeListInString, parsedClass.isAbstract());
-
+        const newClass = new Class(this._getClassNameWithTypeParameters(parsedClass), parsedClass.isAbstract());
         this._entityStore.put(fileName, parsedClass.getName(), newClass);
 
-        replacements = this._addClassTypeParameters(parsedClass.getTypeParameters(), newClass, replacements);
-
-        this._addAttributesIntoClass(parsedClass.getAttributes(), newClass, replacements);
+        replacements = this._removeOverlappedReplacements(parsedClass.getTypeParameters(), replacements);
 
         const ctor = parsedClass.getConstructor();
         if (ctor) {
             this._addConstructorIntoClass(ctor, newClass, replacements);
         }
 
+        this._addAttributesIntoClass(parsedClass.getAttributes(), newClass, replacements);
         this._addGettersIntoClass(parsedClass.getGetters(), newClass, replacements);
         this._addSettersIntoClass(parsedClass.getSetters(), newClass, replacements);
         this._addMethodsIntoClass(parsedClass.getMethods(), newClass, replacements);
 
         this._addUsagesIntoClass(parsedClass.getUsages(), newClass, fileName);
         this._addExtensionsIntoClass(parsedClass.getExtensions(), newClass, fileName);
-    }
-
-    private _addClassTypeParameters(
-        parameters: ReferenceType[],
-        cls: Class,
-        replacements: IReplacement[]
-    ): IReplacement[] {
-        cls.setObjectParameters(parameters.map(tp => tp.getTypeName([], false)));
-        const classTypeParameterReferences = _.chain(parameters)
-            .map(tp => tp.getReferenceTypes())
-            .flatten()
-            .uniq()
-            .map(type => type.getTypeName([], false))
-            .value();
-
-        return replacements.filter(replacement => !classTypeParameterReferences.includes(replacement.from));
     }
 
     private _addConstructorIntoClass(ctor: Constructor, cls: Class, replacements: IReplacement[]): void {
@@ -310,6 +290,12 @@ export default class Builder {
         }).filter((usedPath): usedPath is string => usedPath !== undefined);
     }
 
+    private _getClassNameWithTypeParameters(cls: ParsedClass): string {
+        const typeList = cls.getTypeParameters().map(tp => tp.getTypeName([], false));
+        const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
+        return cls.getName() + typeListInString;
+    }
+
     private async _getFileList(directory: string): Promise<string[]> {
         return new Promise((resolve, reject) => {
             fs.readdir(directory, { withFileTypes: true }, (err, files) => {
@@ -350,5 +336,19 @@ export default class Builder {
 
         fileNameObject.ext = correctExtension;
         return path.format(fileNameObject);
+    }
+
+    private _removeOverlappedReplacements(
+        parameters: ReferenceType[],
+        replacements: IReplacement[]
+    ): IReplacement[] {
+        const classTypeParameterReferences = _.chain(parameters)
+            .map(tp => tp.getReferenceTypes())
+            .flatten()
+            .uniq()
+            .map(type => type.getTypeName([], false))
+            .value();
+
+        return replacements.filter(replacement => !classTypeParameterReferences.includes(replacement.from));
     }
 }

@@ -44,12 +44,4 @@ export default class GenericObjectWithAttributes extends GenericObject {
     getAttributes(): Property[] {
         return this._attributes;
     }
-
-    getObjectParameters(): string[] {
-        return this._objectParameters;
-    }
-
-    setObjectParameters(parameters: string[]): void {
-        this._objectParameters = parameters;
-    }
 }
