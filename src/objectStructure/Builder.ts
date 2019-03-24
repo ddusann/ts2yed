@@ -27,18 +27,24 @@ import * as _ from 'lodash';
 
 import Parser, { IParsedFile } from '../parser/Parser';
 
+import Attribute from '../parser/Attribute';
 import Class from './Class';
+import Constructor from '../parser/Constructor';
 import Edge from '../outputBuilder/Edge';
 import FileDependency from './FileDependency';
 import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
 import GenericObject from './GenericObject';
+import Getter from '../parser/Getter';
 import Graph from '../outputBuilder/Graph';
 import { IReplacement } from '../parser/types/Type';
+import Method from '../parser/Method';
 import Node from '../outputBuilder/Node';
 import OutputBuilderProperty from '../outputBuilder/Property';
 import ParsedClass from '../parser/Class';
 import Property from './Property';
+import ReferenceType from '../parser/types/ReferenceType';
+import Setter from '../parser/Setter';
 import Store from './Store';
 import VisibilityType from '../VisibilityType';
 import fs from 'fs';
@@ -117,6 +123,55 @@ export default class Builder {
         return graph;
     }
 
+    private _addAttributesIntoClass(attributes: Attribute[], cls: Class, replacements: IReplacement[]): void {
+        attributes.forEach(attribute => {
+            let name = `${attribute.getName(replacements)}`;
+            if (attribute.isStatic()) {
+                name = `static ${name}`;
+            }
+            if (attribute.isReadOnly()) {
+                name = `readonly ${name}`;
+            }
+            if (attribute.isOptional()) {
+                name = `${name}?`;
+            }
+
+            cls.addAttribute(new Property(
+                name,
+                attribute.getVisibilityType() || VisibilityType.PUBLIC,
+                attribute.getType().getTypeName(replacements, false))
+            );
+        });
+    }
+
+    private _addClassTypeParameters(
+        parameters: ReferenceType[],
+        cls: Class,
+        replacements: IReplacement[]
+    ): IReplacement[] {
+        cls.setObjectParameters(parameters.map(tp => tp.getTypeName([], false)));
+        const classTypeParameterReferences = _.chain(parameters)
+            .map(tp => tp.getReferenceTypes())
+            .flatten()
+            .uniq()
+            .map(type => type.getTypeName([], false))
+            .value();
+
+        return replacements.filter(replacement => !classTypeParameterReferences.includes(replacement.from));
+    }
+
+    private _addConstructorIntoClass(ctor: Constructor, cls: Class, replacements: IReplacement[]): void {
+        cls.addMethod(new Property(
+            'constructor',
+            ctor.getVisibilityType() || VisibilityType.PUBLIC,
+            '',
+            ctor.getParameters().map(parameter => ({
+                name: parameter.getName(),
+                type: parameter.getType().getTypeName(replacements, false)
+            }))
+        ));
+    }
+
     private _addEntity(fileName: FileName, entity: FileEntity, replacements: IReplacement[] = []) {
         if (entity instanceof ParsedClass) {
             const typeList = entity.getTypeParameters().map(tp => tp.getTypeName([], false));
@@ -125,136 +180,51 @@ export default class Builder {
 
             this._entityStore.put(fileName, entity.getName(), newClass);
 
-            newClass.setObjectParameters(entity.getTypeParameters().map(tp => tp.getTypeName([], false)));
-            const classTypeParameterReferences = _.chain(entity.getTypeParameters())
-                .map(tp => tp.getReferenceTypes())
-                .flatten()
-                .uniq()
-                .map(type => type.getTypeName([], false))
-                .value();
+            replacements = this._addClassTypeParameters(entity.getTypeParameters(), newClass, replacements);
 
-            replacements = replacements.filter(replacement => !classTypeParameterReferences.includes(replacement.from));
-
-            entity.getAttributes().forEach(attribute => {
-                let name = `${attribute.getName(replacements)}`;
-                if (attribute.isStatic()) {
-                    name = `static ${name}`;
-                }
-                if (attribute.isReadOnly()) {
-                    name = `readonly ${name}`;
-                }
-                if (attribute.isOptional()) {
-                    name = `${name}?`;
-                }
-
-                newClass.addAttribute(new Property(
-                    name,
-                    attribute.getVisibilityType() || VisibilityType.PUBLIC,
-                    attribute.getType().getTypeName(replacements, false))
-                );
-            });
+            this._addAttributesIntoClass(entity.getAttributes(), newClass, replacements);
 
             const ctor = entity.getConstructor();
             if (ctor) {
-                newClass.addMethod(new Property(
-                    'constructor',
-                    ctor.getVisibilityType() || VisibilityType.PUBLIC,
-                    '',
-                    ctor.getParameters().map(parameter => ({
-                        name: parameter.getName(),
-                        type: parameter.getType().getTypeName(replacements, false)
-                    }))
-                ));
+                this._addConstructorIntoClass(ctor, newClass, replacements);
             }
 
-            entity.getGetters().forEach(getter => {
-                let name = `getter ${getter.getName(replacements)}`;
-                if (getter.isStatic()) {
-                    name = `static ${name}`;
-                }
-                if (getter.isAbstract()) {
-                    name = `abstract ${name}`;
-                }
+            this._addGettersIntoClass(entity.getGetters(), newClass, replacements);
+            this._addSettersIntoClass(entity.getSetters(), newClass, replacements);
+            this._addMethodsIntoClass(entity.getMethods(), newClass, replacements);
 
-                newClass.addMethod(new Property(
-                    name,
-                    getter.getVisibilityType() || VisibilityType.PUBLIC,
-                    getter.getType().getTypeName(replacements, false))
-                );
-            });
-
-            entity.getSetters().forEach(setter => {
-                const parameters = setter.getParameters().map(parameter => ({
-                    name: parameter.getName(),
-                    type: parameter.getType().getTypeName(replacements, false)
-                }));
-
-                let name = `setter ${setter.getName(replacements)}`;
-                if (setter.isStatic()) {
-                    name = `static ${name}`;
-                }
-                if (setter.isAbstract()) {
-                    name = `abstract ${name}`;
-                }
-
-                newClass.addMethod(new Property(
-                    name,
-                    setter.getVisibilityType() || VisibilityType.PUBLIC,
-                    setter.getType().getTypeName(replacements, false),
-                    parameters));
-            });
-
-            entity.getMethods().forEach(method => {
-                const methodTypeParameterReferences = _.chain(method.getTypeParameters())
-                    .map(tp => tp.getReferenceTypes())
-                    .flatten()
-                    .uniq()
-                    .map(type => type.getTypeName([], false))
-                    .value();
-                const methodReplacements = replacements.filter(replacement =>
-                    !methodTypeParameterReferences.includes(replacement.from));
-
-                const parameters = method.getParameters().map(parameter => ({
-                    name: parameter.getName(),
-                    type: parameter.getType().getTypeName(methodReplacements, false)
-                }));
-
-                let name = `${method.getName(replacements)}`;
-                if (method.isStatic()) {
-                    name = `static ${name}`;
-                }
-                if (method.isAbstract()) {
-                    name = `abstract ${name}`;
-                }
-
-                newClass.addMethod(new Property(
-                    name,
-                    method.getVisibilityType() || VisibilityType.PUBLIC,
-                    method.getType().getTypeName(methodReplacements, false),
-                    parameters)
-                );
-            });
-
-            const usages = entity.getUsages();
-            usages.forEach(usage => {
-                const usageObject = this._entityStore.get(fileName, usage.getTypeName([], false));
-                if (!usageObject) {
-                    return;
-                }
-
-                newClass.addUsage(usageObject);
-            });
-
-            const extensions = entity.getExtensions();
-            extensions.forEach(extension => {
-                const usageObject = this._entityStore.get(fileName, extension.getTypeName([], false));
-                if (!usageObject) {
-                    return;
-                }
-
-                newClass.addExtension(usageObject);
-            });
+            this._addUsagesIntoClass(entity.getUsages(), newClass, fileName);
+            this._addExtensionsIntoClass(entity.getExtensions(), newClass, fileName);
         }
+    }
+
+    private _addExtensionsIntoClass(extensions: ReferenceType[], cls: Class, fileName: FileName): void {
+        extensions.forEach(extension => {
+            const usageObject = this._entityStore.get(fileName, extension.getTypeName([], false));
+            if (!usageObject) {
+                return;
+            }
+
+            cls.addExtension(usageObject);
+        });
+    }
+
+    private _addGettersIntoClass(getters: Getter[], cls: Class, replacements: IReplacement[]): void {
+        getters.forEach(getter => {
+            let name = `getter ${getter.getName(replacements)}`;
+            if (getter.isStatic()) {
+                name = `static ${name}`;
+            }
+            if (getter.isAbstract()) {
+                name = `abstract ${name}`;
+            }
+
+            cls.addMethod(new Property(
+                name,
+                getter.getVisibilityType() || VisibilityType.PUBLIC,
+                getter.getType().getTypeName(replacements, false))
+            );
+        });
     }
 
     private _addImportsIntoStore(fileName: string): IReplacement[] {
@@ -296,6 +266,73 @@ export default class Builder {
         });
 
         return replacements;
+    }
+
+    private _addMethodsIntoClass(methods: Method[], cls: Class, replacements: IReplacement[]): void {
+        methods.forEach(method => {
+            const methodTypeParameterReferences = _.chain(method.getTypeParameters())
+                .map(tp => tp.getReferenceTypes())
+                .flatten()
+                .uniq()
+                .map(type => type.getTypeName([], false))
+                .value();
+            const methodReplacements = replacements.filter(replacement =>
+                !methodTypeParameterReferences.includes(replacement.from));
+
+            const parameters = method.getParameters().map(parameter => ({
+                name: parameter.getName(),
+                type: parameter.getType().getTypeName(methodReplacements, false)
+            }));
+
+            let name = `${method.getName(replacements)}`;
+            if (method.isStatic()) {
+                name = `static ${name}`;
+            }
+            if (method.isAbstract()) {
+                name = `abstract ${name}`;
+            }
+
+            cls.addMethod(new Property(
+                name,
+                method.getVisibilityType() || VisibilityType.PUBLIC,
+                method.getType().getTypeName(methodReplacements, false),
+                parameters)
+            );
+        });
+    }
+
+    private _addSettersIntoClass(setters: Setter[], cls: Class, replacements: IReplacement[]): void {
+        setters.forEach(setter => {
+            const parameters = setter.getParameters().map(parameter => ({
+                name: parameter.getName(),
+                type: parameter.getType().getTypeName(replacements, false)
+            }));
+
+            let name = `setter ${setter.getName(replacements)}`;
+            if (setter.isStatic()) {
+                name = `static ${name}`;
+            }
+            if (setter.isAbstract()) {
+                name = `abstract ${name}`;
+            }
+
+            cls.addMethod(new Property(
+                name,
+                setter.getVisibilityType() || VisibilityType.PUBLIC,
+                setter.getType().getTypeName(replacements, false),
+                parameters));
+        });
+    }
+
+    private _addUsagesIntoClass(usages: ReferenceType[], cls: Class, fileName: FileName): void {
+        usages.forEach(usage => {
+            const usageObject = this._entityStore.get(fileName, usage.getTypeName([], false));
+            if (!usageObject) {
+                return;
+            }
+
+            cls.addUsage(usageObject);
+        });
     }
 
     private _createClassGraphNode(cls: Class): Node {
