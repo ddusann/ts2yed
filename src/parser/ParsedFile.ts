@@ -130,8 +130,4 @@ export default class ParsedFile {
     getImports(): Import[] {
         return this._imports;
     }
-
-    getSymbolImport(sym: string): Import|undefined {
-        return this._imports.find(importStatement => importStatement.getNames().includes(sym));
-    }
 }

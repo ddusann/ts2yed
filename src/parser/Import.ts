@@ -52,15 +52,7 @@ export default class Import {
     }
 
     getNames(): string[] {
-        const names: string[] = [];
-
-        if (this._defaultImport) {
-            names.push(this._defaultImport);
-        }
-
-        names.splice(names.length, 0, ...this._imports.map(importNames => importNames.usedName));
-
-        return names;
+        return this._imports.map(importNames => importNames.usedName);
     }
 
     unalias(name: string): string {

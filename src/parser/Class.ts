@@ -65,6 +65,10 @@ export default class Class {
         return this._members.find((member: Member): member is Constructor => member instanceof Constructor);
     }
 
+    getExtensions(): ReferenceType[] {
+        return this._extensions;
+    }
+
     getGetters(): Getter[] {
         return this._members.filter((member: Member): member is Getter => member instanceof Getter);
     }

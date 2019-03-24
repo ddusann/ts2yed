@@ -46,19 +46,12 @@ import path from 'path';
 
 type FileName = string;
 
-interface IDependency {
-    dependencies: FileName[];
-    entity: FileEntity;
-}
-
 export default class Builder {
-    private _classes: Class[];
     private _directory: string;
     private _entityStore: Store;
     private _files: IParsedFile[];
 
     constructor(directory: string) {
-        this._classes = [];
         this._directory = path.isAbsolute(directory) ? directory : path.join(process.cwd(), directory);
         this._entityStore = new Store();
         this._files = [];
@@ -108,6 +101,16 @@ export default class Builder {
                 }
 
                 graph.addEdge(new Edge(entityGraphNode, usageGraphNode, 'usage'));
+            });
+
+            entity.getExtensions().forEach(extension => {
+                const entityGraphNode = graphNodes.get(entity);
+                const usageGraphNode = graphNodes.get(extension);
+                if (!entityGraphNode || !usageGraphNode) {
+                    throw new Error('Graph nodes not found!');
+                }
+
+                graph.addEdge(new Edge(entityGraphNode, usageGraphNode, 'inheritance'));
             });
         });
 
@@ -206,6 +209,16 @@ export default class Builder {
 
                 newClass.addUsage(usageObject);
             });
+
+            const extensions = entity.getExtensions();
+            extensions.forEach(extension => {
+                const usageObject = this._entityStore.get(fileName, extension.getTypeName([], false));
+                if (!usageObject) {
+                    return;
+                }
+
+                newClass.addExtension(usageObject);
+            });
         }
     }
 
@@ -214,13 +227,14 @@ export default class Builder {
         const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
         parsedFile.getImports().forEach(imp => {
             const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [imp.getFileName()])[0];
+            const importedParsedFileObj = this._files.find(file => file.fileName === importFilePath);
+            if (!importedParsedFileObj) {
+                throw new Error(`Unknown file '${importFilePath}'!`);
+            }
+
+            const importedParsedFile = importedParsedFileObj.file;
             const defaultImport = imp.getDefaultImport();
             if (defaultImport) {
-                const importedParsedFileObj = this._files.find(file => file.fileName === importFilePath);
-                if (!importedParsedFileObj) {
-                    throw new Error(`Unknown file '${importFilePath}'!`);
-                }
-                const importedParsedFile = importedParsedFileObj.file;
                 const importedParsedFileDefaultExport = importedParsedFile.getDefaultExport();
                 if (importedParsedFileDefaultExport) {
                     replacements.push({ from: defaultImport, to: importedParsedFileDefaultExport });
@@ -231,7 +245,19 @@ export default class Builder {
                     this._entityStore.put(fileName, defaultImport, builtObject);
                 }
             }
-            // TODO aliased imports
+
+            imp.getNames().forEach(importName => {
+                const originalName = imp.unalias(importName);
+                if (importName !== originalName) {
+                    replacements.push({ from: importName, to: originalName });
+                }
+
+                const builtObject = this._entityStore.get(importFilePath, originalName);
+                if (!builtObject) {
+                    throw new Error('Exported symbol not found!');
+                }
+                this._entityStore.put(fileName, importName, builtObject);
+            });
         });
 
         return replacements;
