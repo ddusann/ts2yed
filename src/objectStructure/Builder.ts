@@ -200,7 +200,7 @@ export default class Builder {
 
     private _addExtensionsIntoClass(extensions: ReferenceType[], cls: Class, fileName: FileName): void {
         extensions.forEach(extension => {
-            const usageObject = this._entityStore.get(fileName, extension.getTypeName([], false));
+            const usageObject = this._entityStore.get(fileName, extension.getTypeName([], true));
             if (!usageObject) {
                 return;
             }
@@ -326,7 +326,7 @@ export default class Builder {
 
     private _addUsagesIntoClass(usages: ReferenceType[], cls: Class, fileName: FileName): void {
         usages.forEach(usage => {
-            const usageObject = this._entityStore.get(fileName, usage.getTypeName([], false));
+            const usageObject = this._entityStore.get(fileName, usage.getTypeName([], true));
             if (!usageObject) {
                 return;
             }
