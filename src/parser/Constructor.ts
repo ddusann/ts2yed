@@ -26,13 +26,13 @@
 import Member, { IKeyName } from './Member';
 
 import IModifier from './IModifier';
+import MemberWithParameters from './MemberWithParameters';
 import NotDefinedType from './types/NotDefinedType';
 import Parameter from './Parameter';
 import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
 
-export default class Constructor extends Member {
-    private _parameters: Parameter[];
+export default class Constructor extends MemberWithParameters {
     private _typeParameters: ReferenceType[];
 
     constructor(
@@ -40,15 +40,13 @@ export default class Constructor extends Member {
         parameters: Parameter[],
         typeParameters: ReferenceType[]
     ) {
-        super('constructor', modifiers, new NotDefinedType());
-
-        this._parameters = parameters;
+        super('constructor', modifiers, parameters, new NotDefinedType());
         this._typeParameters = typeParameters;
     }
 
     getReferenceTypes(): ReferenceType[] {
         const superTypes = super.getReferenceTypes();
-        const constructorTypes = this._parameters.map(param => param.getReferenceTypes())
+        const constructorTypes = this.getParameters().map(param => param.getReferenceTypes())
             .concat(this._typeParameters.map(param => param.getReferenceTypes()))
             .reduce((acc, types) => acc.concat(types), [])
             .filter((type: Type): type is ReferenceType => type instanceof ReferenceType);

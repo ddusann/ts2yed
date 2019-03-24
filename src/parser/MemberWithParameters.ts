@@ -23,40 +23,27 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { IKeyName } from './Member';
+import Member, { IKeyName } from './Member';
+
 import IModifier from './IModifier';
-import MemberWithParameters from './MemberWithParameters';
 import Parameter from './Parameter';
-import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
 
-export default class Method extends MemberWithParameters {
-    private _typeParameters: ReferenceType[];
+export default class MemberWithParameters extends Member {
+    private _parameters: Parameter[];
 
     constructor(
         name: string|IKeyName,
         modifiers: IModifier[],
         parameters: Parameter[],
         type: Type,
-        typeParameters: ReferenceType[],
         isKey: boolean = false
     ) {
-        super(name, modifiers, parameters, type, isKey);
-
-        this._typeParameters = typeParameters;
+        super(name, modifiers, type, isKey);
+        this._parameters = parameters;
     }
 
-    getReferenceTypes(): ReferenceType[] {
-        const superTypes = super.getReferenceTypes();
-        const methodTypes = this.getParameters().map(param => param.getReferenceTypes())
-            .reduce((acc, types) => acc.concat(types), [])
-            .filter((type: Type): type is ReferenceType => type instanceof ReferenceType)
-            .concat(this._typeParameters);
-
-        return superTypes.concat(methodTypes);
-    }
-
-    getTypeParameters(): ReferenceType[] {
-        return this._typeParameters;
+    getParameters(): Parameter[] {
+        return this._parameters;
     }
 }

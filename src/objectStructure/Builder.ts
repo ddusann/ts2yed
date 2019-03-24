@@ -140,6 +140,40 @@ export default class Builder {
                 );
             });
 
+            const ctor = entity.getConstructor();
+            if (ctor) {
+                newClass.addMethod(new Property(
+                    'constructor',
+                    ctor.getVisibilityType() || VisibilityType.PUBLIC,
+                    '',
+                    ctor.getParameters().map(parameter => ({
+                        name: parameter.getName(),
+                        type: parameter.getType().getTypeName(replacements, false)
+                    }))
+                ));
+            }
+
+            entity.getGetters().forEach(getter => {
+                newClass.addMethod(new Property(
+                    `getter ${getter.getName(replacements)}`,
+                    getter.getVisibilityType() || VisibilityType.PUBLIC,
+                    getter.getType().getTypeName(replacements, false))
+                );
+            });
+
+            entity.getSetters().forEach(setter => {
+                const parameters = setter.getParameters().map(parameter => ({
+                    name: parameter.getName(),
+                    type: parameter.getType().getTypeName(replacements, false)
+                }));
+
+                newClass.addMethod(new Property(
+                    `setter ${setter.getName(replacements)}`,
+                    setter.getVisibilityType() || VisibilityType.PUBLIC,
+                    setter.getType().getTypeName(replacements, false),
+                    parameters));
+            });
+
             entity.getMethods().forEach(method => {
                 const methodTypeParameterReferences = _.chain(method.getTypeParameters())
                     .map(tp => tp.getReferenceTypes())

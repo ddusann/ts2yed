@@ -24,10 +24,13 @@
  */
 
 import Attribute from './Attribute';
+import Constructor from './Constructor';
+import Getter from './Getter';
 import IModifier from './IModifier';
 import Member from './Member';
 import Method from './Method';
 import ReferenceType from './types/ReferenceType';
+import Setter from './Setter';
 import Type from './types/Type';
 
 export default class Class {
@@ -58,12 +61,24 @@ export default class Class {
         return this._members.filter((member: Member): member is Attribute => member instanceof Attribute);
     }
 
+    getConstructor(): Constructor|undefined {
+        return this._members.find((member: Member): member is Constructor => member instanceof Constructor);
+    }
+
+    getGetters(): Getter[] {
+        return this._members.filter((member: Member): member is Getter => member instanceof Getter);
+    }
+
     getMethods(): Method[] {
         return this._members.filter((member: Member): member is Method => member instanceof Method);
     }
 
     getName(): string {
         return this._name;
+    }
+
+    getSetters(): Setter[] {
+        return this._members.filter((member: Member): member is Setter => member instanceof Setter);
     }
 
     getTypeParameters(): ReferenceType[] {
