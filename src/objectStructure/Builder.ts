@@ -136,8 +136,16 @@ export default class Builder {
             replacements = replacements.filter(replacement => !classTypeParameterReferences.includes(replacement.from));
 
             entity.getAttributes().forEach(attribute => {
+                let name = `${attribute.getName(replacements)}`;
+                if (attribute.isReadOnly()) {
+                    name = `readonly ${name}`;
+                }
+                if (attribute.isOptional()) {
+                    name = `${name}?`;
+                }
+
                 newClass.addAttribute(new Property(
-                    attribute.getName(replacements) + (attribute.isOptional() ? '?' : ''),
+                    name,
                     attribute.getVisibilityType() || VisibilityType.PUBLIC,
                     attribute.getType().getTypeName(replacements, false))
                 );

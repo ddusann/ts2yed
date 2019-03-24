@@ -81,4 +81,8 @@ export default abstract class Member {
     isOptional(): boolean {
         return this._memberTypes.includes(ModifierType.OPTIONAL);
     }
+
+    isReadOnly(): boolean {
+        return this._memberTypes.includes(ModifierType.READONLY);
+    }
 }
