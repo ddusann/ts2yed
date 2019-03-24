@@ -137,6 +137,9 @@ export default class Builder {
 
             entity.getAttributes().forEach(attribute => {
                 let name = `${attribute.getName(replacements)}`;
+                if (attribute.isStatic()) {
+                    name = `static ${name}`;
+                }
                 if (attribute.isReadOnly()) {
                     name = `readonly ${name}`;
                 }
@@ -166,6 +169,9 @@ export default class Builder {
 
             entity.getGetters().forEach(getter => {
                 let name = `getter ${getter.getName(replacements)}`;
+                if (getter.isStatic()) {
+                    name = `static ${name}`;
+                }
                 if (getter.isAbstract()) {
                     name = `abstract ${name}`;
                 }
@@ -184,6 +190,9 @@ export default class Builder {
                 }));
 
                 let name = `setter ${setter.getName(replacements)}`;
+                if (setter.isStatic()) {
+                    name = `static ${name}`;
+                }
                 if (setter.isAbstract()) {
                     name = `abstract ${name}`;
                 }
@@ -211,6 +220,9 @@ export default class Builder {
                 }));
 
                 let name = `${method.getName(replacements)}`;
+                if (method.isStatic()) {
+                    name = `static ${name}`;
+                }
                 if (method.isAbstract()) {
                     name = `abstract ${name}`;
                 }
