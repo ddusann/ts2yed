@@ -137,7 +137,7 @@ export default class Builder {
 
             entity.getAttributes().forEach(attribute => {
                 newClass.addAttribute(new Property(
-                    attribute.getName(replacements),
+                    attribute.getName(replacements) + (attribute.isOptional() ? '?' : ''),
                     attribute.getVisibilityType() || VisibilityType.PUBLIC,
                     attribute.getType().getTypeName(replacements, false))
                 );

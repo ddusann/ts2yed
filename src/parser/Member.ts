@@ -73,4 +73,8 @@ export default abstract class Member {
             return undefined;
         }
     }
+
+    isOptional(): boolean {
+        return this._memberTypes.includes(ModifierType.OPTIONAL);
+    }
 }
