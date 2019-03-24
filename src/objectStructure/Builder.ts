@@ -157,8 +157,13 @@ export default class Builder {
             }
 
             entity.getGetters().forEach(getter => {
+                let name = `getter ${getter.getName(replacements)}`;
+                if (getter.isAbstract()) {
+                    name = `abstract ${name}`;
+                }
+
                 newClass.addMethod(new Property(
-                    `getter ${getter.getName(replacements)}`,
+                    name,
                     getter.getVisibilityType() || VisibilityType.PUBLIC,
                     getter.getType().getTypeName(replacements, false))
                 );
@@ -170,8 +175,13 @@ export default class Builder {
                     type: parameter.getType().getTypeName(replacements, false)
                 }));
 
+                let name = `setter ${setter.getName(replacements)}`;
+                if (setter.isAbstract()) {
+                    name = `abstract ${name}`;
+                }
+
                 newClass.addMethod(new Property(
-                    `setter ${setter.getName(replacements)}`,
+                    name,
                     setter.getVisibilityType() || VisibilityType.PUBLIC,
                     setter.getType().getTypeName(replacements, false),
                     parameters));
@@ -192,8 +202,13 @@ export default class Builder {
                     type: parameter.getType().getTypeName(methodReplacements, false)
                 }));
 
+                let name = `${method.getName(replacements)}`;
+                if (method.isAbstract()) {
+                    name = `abstract ${name}`;
+                }
+
                 newClass.addMethod(new Property(
-                    method.getName(methodReplacements),
+                    name,
                     method.getVisibilityType() || VisibilityType.PUBLIC,
                     method.getType().getTypeName(methodReplacements, false),
                     parameters)
