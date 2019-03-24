@@ -23,30 +23,25 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import * as _ from 'lodash';
-
 import Parser, { IParsedFile } from '../parser/Parser';
 
 import Attribute from '../parser/Attribute';
 import Class from './Class';
 import Constructor from '../parser/Constructor';
-import Edge from '../outputBuilder/Edge';
 import FileDependency from './FileDependency';
 import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
 import GenericObject from './GenericObject';
 import Getter from '../parser/Getter';
-import Graph from '../outputBuilder/Graph';
 import { IReplacement } from '../parser/types/Type';
 import Method from '../parser/Method';
-import Node from '../outputBuilder/Node';
-import OutputBuilderProperty from '../outputBuilder/Property';
 import ParsedClass from '../parser/Class';
 import Property from './Property';
 import ReferenceType from '../parser/types/ReferenceType';
 import Setter from '../parser/Setter';
 import Store from './Store';
 import VisibilityType from '../VisibilityType';
+import _ from 'lodash';
 import fs from 'fs';
 import path from 'path';
 
@@ -63,7 +58,7 @@ export default class Builder {
         this._files = [];
     }
 
-    async parse(): Promise<Graph> {
+    async parse(): Promise<GenericObject[]> {
         const sourceFileList = await this._getFileList(this._directory);
         this._files = await new Parser(sourceFileList).getFiles();
         const tsFileList = new FileDependency();
@@ -90,37 +85,7 @@ export default class Builder {
             }
         }
 
-        const graph = new Graph();
-        const graphNodes = new Map<GenericObject, Node>();
-        this._entityStore.getClasses().forEach(cls => {
-            const graphClass = this._createClassGraphNode(cls);
-            graph.addNode(graphClass);
-            graphNodes.set(cls, graphClass);
-        });
-
-        this._entityStore.getAllEntities().forEach(entity => {
-            entity.getUsages().forEach(usage => {
-                const entityGraphNode = graphNodes.get(entity);
-                const usageGraphNode = graphNodes.get(usage);
-                if (!entityGraphNode || !usageGraphNode) {
-                    throw new Error('Graph nodes not found!');
-                }
-
-                graph.addEdge(new Edge(entityGraphNode, usageGraphNode, 'usage'));
-            });
-
-            entity.getExtensions().forEach(extension => {
-                const entityGraphNode = graphNodes.get(entity);
-                const usageGraphNode = graphNodes.get(extension);
-                if (!entityGraphNode || !usageGraphNode) {
-                    throw new Error('Graph nodes not found!');
-                }
-
-                graph.addEdge(new Edge(entityGraphNode, usageGraphNode, 'inheritance'));
-            });
-        });
-
-        return graph;
+        return this._entityStore.getAllEntities();
     }
 
     private _addAttributesIntoClass(attributes: Attribute[], cls: Class, replacements: IReplacement[]): void {
@@ -337,32 +302,6 @@ export default class Builder {
 
             cls.addUsage(usageObject);
         });
-    }
-
-    private _createClassGraphNode(cls: Class): Node {
-        const node = new Node(cls.getName(), cls.getStereotype());
-
-        cls.getAttributes()
-            .forEach(attribute =>
-                node.addAttribute(new OutputBuilderProperty(
-                    attribute.getName(),
-                    attribute.getVisibility(),
-                    attribute.getType()
-                )));
-
-        cls.getMethods().forEach(method => {
-            const parameters = method.getParameters()
-                .map(parameter => `${parameter.name}: ${parameter.type}`)
-                .join(', ');
-
-            node.addMethod(
-                new OutputBuilderProperty(`${method.getName()}(${parameters})`,
-                method.getVisibility(),
-                method.getType()
-            ));
-        });
-
-        return node;
     }
 
     private _getAbsolutePaths(fileDirectory: string, paths: string[]): string[] {
