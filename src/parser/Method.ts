@@ -48,6 +48,10 @@ export default class Method extends Member {
         this._typeParameters = typeParameters;
     }
 
+    getParameters(): Parameter[] {
+        return this._parameters;
+    }
+
     getReferenceTypes(): ReferenceType[] {
         const superTypes = super.getReferenceTypes();
         const methodTypes = this._parameters.map(param => param.getReferenceTypes())

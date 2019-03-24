@@ -25,23 +25,34 @@
 
 import VisibilityType from '../VisibilityType';
 
+interface IParameter {
+    name: string;
+    type: string;
+}
+
 export default class Property {
     private _isAbstract: boolean;
     private _isStatic: boolean;
     private _name: string;
+    private _parameters: IParameter[];
     private _type: string;
     private _visibility: VisibilityType;
 
-    constructor(name: string, visibility: VisibilityType, type: string) {
+    constructor(name: string, visibility: VisibilityType, type: string, parameters: IParameter[] = []) {
         this._name = name;
         this._visibility = visibility;
         this._isAbstract = false;
         this._isStatic = false;
+        this._parameters = parameters;
         this._type = type;
     }
 
     getName(): string {
         return this._name;
+    }
+
+    getParameters(): IParameter[] {
+        return this._parameters;
     }
 
     getType(): string {

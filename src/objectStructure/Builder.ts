@@ -150,10 +150,16 @@ export default class Builder {
                 const methodReplacements = replacements.filter(replacement =>
                     !methodTypeParameterReferences.includes(replacement.from));
 
+                const parameters = method.getParameters().map(parameter => ({
+                    name: parameter.getName(),
+                    type: parameter.getType().getTypeName(methodReplacements, false)
+                }));
+
                 newClass.addMethod(new Property(
                     method.getName(methodReplacements),
                     method.getVisibilityType() || VisibilityType.PUBLIC,
-                    method.getType().getTypeName(methodReplacements, false))
+                    method.getType().getTypeName(methodReplacements, false),
+                    parameters)
                 );
             });
 
@@ -208,12 +214,17 @@ export default class Builder {
                     attribute.getType()
                 )));
 
-        cls.getMethods()
-            .forEach(method => node.addMethod(
-                new OutputBuilderProperty(method.getName(),
+        cls.getMethods().forEach(method => {
+            const parameters = method.getParameters()
+                .map(parameter => `${parameter.name}: ${parameter.type}`)
+                .join(', ');
+
+            node.addMethod(
+                new OutputBuilderProperty(`${method.getName()}(${parameters})`,
                 method.getVisibility(),
                 method.getType()
-            )));
+            ));
+        });
 
         return node;
     }
