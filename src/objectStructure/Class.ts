@@ -23,48 +23,17 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import GenericObjectWithAttributes from './GenericObjectWithAttributes';
-import Property from './Property';
-import VisibilityType from '../VisibilityType';
+import GenericObjectDeclaration from './GenericObjectDeclaration';
 
-export default class Class extends GenericObjectWithAttributes {
+export default class Class extends GenericObjectDeclaration {
     private _isAbstract: boolean;
-    private _isStatic: boolean;
-    private _methods: Property[];
-    private _name: string;
-    private _visibility: VisibilityType;
 
     constructor(name: string, isAbstract: boolean) {
-        super(isAbstract ? 'abstract' : '');
-
-        this._methods = [];
-        this._name = name;
-        this._visibility = VisibilityType.PUBLIC;
+        super(name, isAbstract ? 'abstract' : '');
         this._isAbstract = isAbstract;
-        this._isStatic = false;
-    }
-
-    addMethod(method: Property) {
-        this._methods.push(method);
-    }
-
-    getMethods(): Property[] {
-        return this._methods;
-    }
-
-    getName(): string {
-        return this._name;
-    }
-
-    getVisibility(): VisibilityType {
-        return this._visibility;
     }
 
     isAbstract(): boolean {
         return this._isAbstract;
-    }
-
-    isStatic(): boolean {
-        return this._isStatic;
     }
 }

@@ -26,22 +26,36 @@
 import GenericObject from './GenericObject';
 import Property from './Property';
 
-export default class GenericObjectWithAttributes extends GenericObject {
+export default class GenericObjectDeclaration extends GenericObject {
     private _attributes: Property[];
-    private _objectParameters: string[];
+    private _methods: Property[];
+    private _name: string;
 
-    constructor(stereotype: string) {
+    constructor(name: string, stereotype: string) {
         super(stereotype);
 
         this._attributes = [];
-        this._objectParameters = [];
+        this._methods = [];
+        this._name = name;
     }
 
     addAttribute(attribute: Property) {
         this._attributes.push(attribute);
     }
 
+    addMethod(method: Property) {
+        this._methods.push(method);
+    }
+
     getAttributes(): Property[] {
         return this._attributes;
+    }
+
+    getMethods(): Property[] {
+        return this._methods;
+    }
+
+    getName(): string {
+        return this._name;
     }
 }
