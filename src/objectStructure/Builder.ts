@@ -144,6 +144,30 @@ export default class Builder {
         });
     }
 
+    private _addClass(fileName: FileName, parsedClass: ParsedClass, replacements: IReplacement[] = []): void {
+        const typeList = parsedClass.getTypeParameters().map(tp => tp.getTypeName([], false));
+        const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
+        const newClass = new Class(parsedClass.getName() + typeListInString, parsedClass.isAbstract());
+
+        this._entityStore.put(fileName, parsedClass.getName(), newClass);
+
+        replacements = this._addClassTypeParameters(parsedClass.getTypeParameters(), newClass, replacements);
+
+        this._addAttributesIntoClass(parsedClass.getAttributes(), newClass, replacements);
+
+        const ctor = parsedClass.getConstructor();
+        if (ctor) {
+            this._addConstructorIntoClass(ctor, newClass, replacements);
+        }
+
+        this._addGettersIntoClass(parsedClass.getGetters(), newClass, replacements);
+        this._addSettersIntoClass(parsedClass.getSetters(), newClass, replacements);
+        this._addMethodsIntoClass(parsedClass.getMethods(), newClass, replacements);
+
+        this._addUsagesIntoClass(parsedClass.getUsages(), newClass, fileName);
+        this._addExtensionsIntoClass(parsedClass.getExtensions(), newClass, fileName);
+    }
+
     private _addClassTypeParameters(
         parameters: ReferenceType[],
         cls: Class,
@@ -172,29 +196,9 @@ export default class Builder {
         ));
     }
 
-    private _addEntity(fileName: FileName, entity: FileEntity, replacements: IReplacement[] = []) {
+    private _addEntity(fileName: FileName, entity: FileEntity, replacements: IReplacement[] = []): void {
         if (entity instanceof ParsedClass) {
-            const typeList = entity.getTypeParameters().map(tp => tp.getTypeName([], false));
-            const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
-            const newClass = new Class(entity.getName() + typeListInString, entity.isAbstract());
-
-            this._entityStore.put(fileName, entity.getName(), newClass);
-
-            replacements = this._addClassTypeParameters(entity.getTypeParameters(), newClass, replacements);
-
-            this._addAttributesIntoClass(entity.getAttributes(), newClass, replacements);
-
-            const ctor = entity.getConstructor();
-            if (ctor) {
-                this._addConstructorIntoClass(ctor, newClass, replacements);
-            }
-
-            this._addGettersIntoClass(entity.getGetters(), newClass, replacements);
-            this._addSettersIntoClass(entity.getSetters(), newClass, replacements);
-            this._addMethodsIntoClass(entity.getMethods(), newClass, replacements);
-
-            this._addUsagesIntoClass(entity.getUsages(), newClass, fileName);
-            this._addExtensionsIntoClass(entity.getExtensions(), newClass, fileName);
+            this._addClass(fileName, entity, replacements);
         }
     }
 
