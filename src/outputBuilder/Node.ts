@@ -37,13 +37,15 @@ export default class Node implements INode {
     private _methods: Property[];
     private _name: string;
     private _position: Point;
+    private _stereotype: string;
 
-    constructor(name: string) {
+    constructor(name: string, stereotype: string) {
         this._id = IdGenerator.get('n');
         this._attributes = [];
         this._methods = [];
         this._name = name;
         this._position = new Point(0, 0);
+        this._stereotype = stereotype;
     }
 
     addAttribute(attribute: Property): void {
@@ -89,7 +91,7 @@ export default class Node implements INode {
             .setAttribute('constraint', '')
             .setAttribute('hasDetailsColor', 'false')
             .setAttribute('omitDetails', 'false')
-            .setAttribute('stereotype', '')
+            .setAttribute('stereotype', this._stereotype)
             .setAttribute('use3DEffect', 'true');
         umlContent.addNode('y:AttributeLabel').setValue(this._attributes.map(attr => attr.getLabel()).join('\n'));
         umlContent.addNode('y:MethodLabel').setValue(this._methods.map(method => method.getLabel()).join('\n'));
@@ -154,7 +156,11 @@ export default class Node implements INode {
     }
 
     private _getHeight(): number {
-        return 46 + 14 * (this._attributes.length + this._methods.length);
+        let height = 46 + 14 * (this._attributes.length + this._methods.length);
+        if (this._stereotype !== '') {
+            height += 20;
+        }
+        return height;
     }
 
     private _getWidth(): number {

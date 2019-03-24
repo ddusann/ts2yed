@@ -25,13 +25,13 @@
 
 import Member, { IKeyName } from './Member';
 
-import IModifier from './IModifier';
+import ModifierType from './IModifier';
 import Type from './types/Type';
 
 export default class Getter extends Member {
     constructor(
         name: string|IKeyName,
-        modifiers: IModifier[],
+        modifiers: ModifierType[],
         type: Type
     ) {
         super(name, modifiers, type);

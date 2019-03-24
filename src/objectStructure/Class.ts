@@ -34,13 +34,13 @@ export default class Class extends GenericObjectWithAttributes {
     private _name: string;
     private _visibility: VisibilityType;
 
-    constructor(name: string) {
-        super();
+    constructor(name: string, isAbstract: boolean) {
+        super(isAbstract ? 'abstract' : '');
 
         this._methods = [];
         this._name = name;
         this._visibility = VisibilityType.PUBLIC;
-        this._isAbstract = false;
+        this._isAbstract = isAbstract;
         this._isStatic = false;
     }
 

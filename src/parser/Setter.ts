@@ -24,8 +24,8 @@
  */
 
 import { IKeyName } from './Member';
-import IModifier from './IModifier';
 import MemberWithParameters from './MemberWithParameters';
+import ModifierType from './IModifier';
 import Parameter from './Parameter';
 import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
@@ -34,7 +34,7 @@ import VoidType from './types/VoidType';
 export default class Setter extends MemberWithParameters {
     constructor(
         name: string|IKeyName,
-        modifiers: IModifier[],
+        modifiers: ModifierType[],
         parameters: Parameter[]
     ) {
         super(name, modifiers, parameters, new VoidType());

@@ -25,7 +25,7 @@
 
 import Type, { IReplacement } from './types/Type';
 
-import IModifier from './IModifier';
+import ModifierType from './IModifier';
 import ReferenceType from './types/ReferenceType';
 import VisibilityType from '../VisibilityType';
 
@@ -36,11 +36,11 @@ export interface IKeyName {
 
 export default abstract class Member {
     private _isKey: boolean;
-    private _memberTypes: IModifier[];
+    private _memberTypes: ModifierType[];
     private _name: string|IKeyName;
     private _type: Type;
 
-    constructor(name: string|IKeyName, modifiers: IModifier[], type: Type, isKey: boolean = false) {
+    constructor(name: string|IKeyName, modifiers: ModifierType[], type: Type, isKey: boolean = false) {
         this._name = name;
         this._memberTypes = modifiers;
         this._type = type;
@@ -63,11 +63,11 @@ export default abstract class Member {
     }
 
     getVisibilityType(): VisibilityType|undefined {
-        if (this._memberTypes.includes(IModifier.PRIVATE)) {
+        if (this._memberTypes.includes(ModifierType.PRIVATE)) {
             return VisibilityType.PRIVATE;
-        } else if (this._memberTypes.includes(IModifier.PROTECTED)) {
+        } else if (this._memberTypes.includes(ModifierType.PROTECTED)) {
             return VisibilityType.PROTECTED;
-        } else if (this._memberTypes.includes(IModifier.PUBLIC)) {
+        } else if (this._memberTypes.includes(ModifierType.PUBLIC)) {
             return VisibilityType.PUBLIC;
         } else {
             return undefined;

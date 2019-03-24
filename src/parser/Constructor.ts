@@ -23,10 +23,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Member, { IKeyName } from './Member';
-
-import IModifier from './IModifier';
 import MemberWithParameters from './MemberWithParameters';
+import ModifierType from './IModifier';
 import NotDefinedType from './types/NotDefinedType';
 import Parameter from './Parameter';
 import ReferenceType from './types/ReferenceType';
@@ -36,7 +34,7 @@ export default class Constructor extends MemberWithParameters {
     private _typeParameters: ReferenceType[];
 
     constructor(
-        modifiers: IModifier[],
+        modifiers: ModifierType[],
         parameters: Parameter[],
         typeParameters: ReferenceType[]
     ) {

@@ -30,8 +30,8 @@ export default class GenericObjectWithAttributes extends GenericObject {
     private _attributes: Property[];
     private _objectParameters: string[];
 
-    constructor() {
-        super();
+    constructor(stereotype: string) {
+        super(stereotype);
 
         this._attributes = [];
         this._objectParameters = [];

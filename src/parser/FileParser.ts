@@ -32,10 +32,10 @@ import Enum from './Enum';
 import Export from './Export';
 import FunctionDefinition from './Function';
 import Getter from './Getter';
-import IModifier from './IModifier';
 import Interface from './Interface';
 import Member from './Member';
 import Method from './Method';
+import ModifierType from './IModifier';
 import NotDefinedType from './types/NotDefinedType';
 import Parameter from './Parameter';
 import ParsedFile from './ParsedFile';
@@ -236,24 +236,24 @@ export default abstract class FileParser {
         }
     }
 
-    private static _parseModifiers(node: any): IModifier[] {
-        const modifiers = node.questionToken ? [IModifier.OPTIONAL] : [];
+    private static _parseModifiers(node: any): ModifierType[] {
+        const modifiers = node.questionToken ? [ModifierType.OPTIONAL] : [];
 
         if (!node || !Array.isArray(node.modifiers)) {
             return modifiers;
         }
 
-        return node.modifiers.map((modifier: any): IModifier|null => {
+        return node.modifiers.map((modifier: any): ModifierType|null => {
             switch (modifier.kind) {
-                case ts.SyntaxKind.PrivateKeyword: return IModifier.PRIVATE;
-                case ts.SyntaxKind.ProtectedKeyword: return IModifier.PROTECTED;
-                case ts.SyntaxKind.PublicKeyword: return IModifier.PUBLIC;
-                case ts.SyntaxKind.StaticKeyword: return IModifier.STATIC;
-                case ts.SyntaxKind.AbstractKeyword: return IModifier.ABSTRACT;
-                case ts.SyntaxKind.ReadonlyKeyword: return IModifier.READONLY;
+                case ts.SyntaxKind.PrivateKeyword: return ModifierType.PRIVATE;
+                case ts.SyntaxKind.ProtectedKeyword: return ModifierType.PROTECTED;
+                case ts.SyntaxKind.PublicKeyword: return ModifierType.PUBLIC;
+                case ts.SyntaxKind.StaticKeyword: return ModifierType.STATIC;
+                case ts.SyntaxKind.AbstractKeyword: return ModifierType.ABSTRACT;
+                case ts.SyntaxKind.ReadonlyKeyword: return ModifierType.READONLY;
                 default: return null;
             }
-        }).filter((modifier: IModifier|null) => modifier !== null).concat(modifiers);
+        }).filter((modifier: ModifierType|null) => modifier !== null).concat(modifiers);
     }
 
     private static _parseNamedImport(node: any): IImport {

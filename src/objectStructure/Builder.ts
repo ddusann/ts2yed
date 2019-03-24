@@ -121,7 +121,7 @@ export default class Builder {
         if (entity instanceof ParsedClass) {
             const typeList = entity.getTypeParameters().map(tp => tp.getTypeName([], false));
             const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
-            const newClass = new Class(entity.getName() + typeListInString);
+            const newClass = new Class(entity.getName() + typeListInString, entity.isAbstract());
 
             this._entityStore.put(fileName, entity.getName(), newClass);
 
@@ -264,7 +264,7 @@ export default class Builder {
     }
 
     private _createClassGraphNode(cls: Class): Node {
-        const node = new Node(cls.getName());
+        const node = new Node(cls.getName(), cls.getStereotype());
 
         cls.getAttributes()
             .forEach(attribute =>

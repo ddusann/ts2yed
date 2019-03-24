@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-enum IModifier {
+enum ModifierType {
     PRIVATE,
     PROTECTED,
     PUBLIC,
@@ -33,4 +33,4 @@ enum IModifier {
     OPTIONAL
 }
 
-export default IModifier;
+export default ModifierType;

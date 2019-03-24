@@ -26,9 +26,9 @@
 import Attribute from './Attribute';
 import Constructor from './Constructor';
 import Getter from './Getter';
-import IModifier from './IModifier';
 import Member from './Member';
 import Method from './Method';
+import ModifierType from './IModifier';
 import ReferenceType from './types/ReferenceType';
 import Setter from './Setter';
 import Type from './types/Type';
@@ -37,14 +37,14 @@ export default class Class {
     private _extensions: ReferenceType[];
     private _implementations: ReferenceType[];
     private _members: Member[];
-    private _modifiers: IModifier[];
+    private _modifiers: ModifierType[];
     private _name: string;
     private _typeParameters: ReferenceType[];
 
     constructor(
         name: string,
         members: Member[],
-        modifiers: IModifier[],
+        modifiers: ModifierType[],
         extensions: ReferenceType[],
         implementations: ReferenceType[],
         typeParameters: ReferenceType[]
@@ -93,5 +93,9 @@ export default class Class {
         return Type.makeReferenceTypeUnique(
             this._members.map(member => member.getReferenceTypes()).reduce((acc, types) => acc.concat(types), [])
         ) as ReferenceType[];
+    }
+
+    isAbstract(): boolean {
+        return this._modifiers.includes(ModifierType.ABSTRACT);
     }
 }

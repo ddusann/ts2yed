@@ -28,7 +28,7 @@ import Attribute from '../Attribute';
 import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
-import IModifier from '../IModifier';
+import ModifierType from '../IModifier';
 import NullType from './NullType';
 import NumberType from './NumberType';
 import ObjectType from './ObjectType';
@@ -83,7 +83,7 @@ export default abstract class TypeParser {
             const name = member.name.text;
             const optional = !!member.questionToken;
             const type = TypeParser.parse(member.type);
-            const flags = optional ? [IModifier.OPTIONAL] : [];
+            const flags = optional ? [ModifierType.OPTIONAL] : [];
             return new Attribute(name, flags, type);
         });
     }
