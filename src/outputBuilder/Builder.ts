@@ -27,6 +27,7 @@ import Class from '../objectStructure/Class';
 import Edge from './Edge';
 import GenericObject from '../objectStructure/GenericObject';
 import Graph from './Graph';
+import Interface from '../objectStructure/Interface';
 import Node from './Node';
 import Property from './Property';
 
@@ -44,6 +45,11 @@ export default class Builder {
             const graphClass = this._createClassGraphNode(cls);
             graph.addNode(graphClass);
             graphNodes.set(cls, graphClass);
+        });
+        this._getInterfaces().forEach(ifc => {
+            const graphIfc = this._createInterfaceGraphNode(ifc);
+            graph.addNode(graphIfc);
+            graphNodes.set(ifc, graphIfc);
         });
 
         this._entities.forEach(entity => {
@@ -97,7 +103,37 @@ export default class Builder {
         return node;
     }
 
+    private _createInterfaceGraphNode(ifc: Interface): Node {
+        const node = new Node(ifc.getName(), ifc.getStereotype());
+
+        ifc.getAttributes().forEach(attribute =>
+            node.addAttribute(new Property(
+                attribute.getName(),
+                attribute.getVisibility(),
+                attribute.getType()
+            ))
+        );
+
+        ifc.getMethods().forEach(method => {
+            const parameters = method.getParameters()
+                .map(parameter => `${parameter.name}: ${parameter.type}`)
+                .join(', ');
+
+            node.addMethod(
+                new Property(`${method.getName()}(${parameters})`,
+                method.getVisibility(),
+                method.getType()
+            ));
+        });
+
+        return node;
+    }
+
     private _getClasses(): Class[] {
         return this._entities.filter((entity: GenericObject): entity is Class => entity instanceof Class);
+    }
+
+    private _getInterfaces(): Interface[] {
+        return this._entities.filter((entity: GenericObject): entity is Interface => entity instanceof Interface);
     }
 }

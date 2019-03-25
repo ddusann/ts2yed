@@ -32,10 +32,13 @@ import FileDependency from './FileDependency';
 import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
 import GenericObject from './GenericObject';
+import GenericObjectDeclaration from './GenericObjectDeclaration';
 import Getter from '../parser/Getter';
 import { IReplacement } from '../parser/types/Type';
+import Interface from './Interface';
 import Method from '../parser/Method';
 import ParsedClass from '../parser/Class';
+import ParsedInterface from '../parser/Interface';
 import Property from './Property';
 import ReferenceType from '../parser/types/ReferenceType';
 import Setter from '../parser/Setter';
@@ -88,7 +91,11 @@ export default class Builder {
         return this._entityStore.getAllEntities();
     }
 
-    private _addAttributesIntoClass(attributes: Attribute[], cls: Class, replacements: IReplacement[]): void {
+    private _addAttributes(
+        attributes: Attribute[],
+        objDeclaration: GenericObjectDeclaration,
+        replacements: IReplacement[]
+    ): void {
         attributes.forEach(attribute => {
             let name = `${attribute.getName(replacements)}`;
             if (attribute.isStatic()) {
@@ -101,7 +108,7 @@ export default class Builder {
                 name = `${name}?`;
             }
 
-            cls.addAttribute(new Property(
+            objDeclaration.addAttribute(new Property(
                 name,
                 attribute.getVisibilityType() || VisibilityType.PUBLIC,
                 attribute.getType().getTypeName(replacements, false))
@@ -110,7 +117,7 @@ export default class Builder {
     }
 
     private _addClass(fileName: FileName, parsedClass: ParsedClass, replacements: IReplacement[] = []): void {
-        const newClass = new Class(this._getClassNameWithTypeParameters(parsedClass), parsedClass.isAbstract());
+        const newClass = new Class(this._getNameWithTypeParameters(parsedClass), parsedClass.isAbstract());
         this._entityStore.put(fileName, parsedClass.getName(), newClass);
 
         replacements = this._removeOverlappedReplacements(parsedClass.getTypeParameters(), replacements);
@@ -120,13 +127,13 @@ export default class Builder {
             this._addConstructorIntoClass(ctor, newClass, replacements);
         }
 
-        this._addAttributesIntoClass(parsedClass.getAttributes(), newClass, replacements);
+        this._addAttributes(parsedClass.getAttributes(), newClass, replacements);
         this._addGettersIntoClass(parsedClass.getGetters(), newClass, replacements);
         this._addSettersIntoClass(parsedClass.getSetters(), newClass, replacements);
-        this._addMethodsIntoClass(parsedClass.getMethods(), newClass, replacements);
+        this._addMethods(parsedClass.getMethods(), newClass, replacements);
 
-        this._addUsagesIntoClass(parsedClass.getUsages(), newClass, fileName);
-        this._addExtensionsIntoClass(parsedClass.getExtensions(), newClass, fileName);
+        this._addUsages(parsedClass.getUsages(), newClass, fileName);
+        this._addExtensions(parsedClass.getExtensions(), newClass, fileName);
     }
 
     private _addConstructorIntoClass(ctor: Constructor, cls: Class, replacements: IReplacement[]): void {
@@ -144,17 +151,19 @@ export default class Builder {
     private _addEntity(fileName: FileName, entity: FileEntity, replacements: IReplacement[] = []): void {
         if (entity instanceof ParsedClass) {
             this._addClass(fileName, entity, replacements);
+        } else if (entity instanceof ParsedInterface) {
+            this._addInterface(fileName, entity, replacements);
         }
     }
 
-    private _addExtensionsIntoClass(extensions: ReferenceType[], cls: Class, fileName: FileName): void {
+    private _addExtensions(extensions: ReferenceType[], obj: GenericObject, fileName: FileName): void {
         extensions.forEach(extension => {
             const usageObject = this._entityStore.get(fileName, extension.getTypeName([], true));
             if (!usageObject) {
                 return;
             }
 
-            cls.addExtension(usageObject);
+            obj.addExtension(usageObject);
         });
     }
 
@@ -217,7 +226,24 @@ export default class Builder {
         return replacements;
     }
 
-    private _addMethodsIntoClass(methods: Method[], cls: Class, replacements: IReplacement[]): void {
+    private _addInterface(fileName: FileName, parsedIfc: ParsedInterface, replacements: IReplacement[] = []): void {
+        const newIfc = new Interface(this._getNameWithTypeParameters(parsedIfc));
+        this._entityStore.put(fileName, parsedIfc.getName(), newIfc);
+
+        replacements = this._removeOverlappedReplacements(parsedIfc.getTypeParameters(), replacements);
+
+        this._addAttributes(parsedIfc.getAttributes(), newIfc, replacements);
+        this._addMethods(parsedIfc.getMethods(), newIfc, replacements);
+
+        this._addUsages(parsedIfc.getUsages(), newIfc, fileName);
+        this._addExtensions(parsedIfc.getExtensions(), newIfc, fileName);
+    }
+
+    private _addMethods(
+        methods: Method[],
+        objDeclaration: GenericObjectDeclaration,
+        replacements: IReplacement[]
+    ): void {
         methods.forEach(method => {
             const methodTypeParameterReferences = _.chain(method.getTypeParameters())
                 .map(tp => tp.getReferenceTypes())
@@ -241,7 +267,7 @@ export default class Builder {
                 name = `abstract ${name}`;
             }
 
-            cls.addMethod(new Property(
+            objDeclaration.addMethod(new Property(
                 name,
                 method.getVisibilityType() || VisibilityType.PUBLIC,
                 method.getType().getTypeName(methodReplacements, false),
@@ -273,14 +299,14 @@ export default class Builder {
         });
     }
 
-    private _addUsagesIntoClass(usages: ReferenceType[], cls: Class, fileName: FileName): void {
+    private _addUsages(usages: ReferenceType[], obj: GenericObject, fileName: FileName): void {
         usages.forEach(usage => {
             const usageObject = this._entityStore.get(fileName, usage.getTypeName([], true));
             if (!usageObject) {
                 return;
             }
 
-            cls.addUsage(usageObject);
+            obj.addUsage(usageObject);
         });
     }
 
@@ -288,12 +314,6 @@ export default class Builder {
         return paths.map(usedPath => {
             return this._getRealFileName(path.isAbsolute(usedPath) ? usedPath : path.join(fileDirectory, usedPath));
         }).filter((usedPath): usedPath is string => usedPath !== undefined);
-    }
-
-    private _getClassNameWithTypeParameters(cls: ParsedClass): string {
-        const typeList = cls.getTypeParameters().map(tp => tp.getTypeName([], false));
-        const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
-        return cls.getName() + typeListInString;
     }
 
     private async _getFileList(directory: string): Promise<string[]> {
@@ -315,6 +335,12 @@ export default class Builder {
                 });
             });
         });
+    }
+
+    private _getNameWithTypeParameters(cls: ParsedClass|ParsedInterface): string {
+        const typeList = cls.getTypeParameters().map(tp => tp.getTypeName([], false));
+        const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
+        return cls.getName() + typeListInString;
     }
 
     private _getRealFileName(fileName: string): string|undefined {

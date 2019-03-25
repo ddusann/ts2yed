@@ -23,8 +23,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import Attribute from './Attribute';
 import Member from './Member';
+import Method from './Method';
 import ReferenceType from './types/ReferenceType';
+import Type from './types/Type';
 
 export default class Interface {
     private _extensions: ReferenceType[];
@@ -39,7 +42,29 @@ export default class Interface {
         this._typeParameters = typeParameters;
     }
 
+    getAttributes(): Attribute[] {
+        return this._members.filter((member: Member): member is Attribute => member instanceof Attribute);
+    }
+
+    getExtensions(): ReferenceType[] {
+        return this._extensions;
+    }
+
+    getMethods(): Method[] {
+        return this._members.filter((member: Member): member is Method => member instanceof Method);
+    }
+
     getName(): string {
         return this._name;
+    }
+
+    getTypeParameters(): ReferenceType[] {
+        return this._typeParameters;
+    }
+
+    getUsages(): ReferenceType[] {
+        return Type.makeReferenceTypeUnique(
+            this._members.map(member => member.getReferenceTypes()).reduce((acc, types) => acc.concat(types), [])
+        ) as ReferenceType[];
     }
 }
