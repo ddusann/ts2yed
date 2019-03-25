@@ -26,6 +26,7 @@
 import BidirectedForest from '../common/BidirectedForest';
 import Class from '../parser/Class';
 import Import from '../parser/Import';
+import Interface from '../parser/Interface';
 import ParsedFile from '../parser/ParsedFile';
 
 export default class FileEntityDependency {
@@ -43,7 +44,7 @@ export default class FileEntityDependency {
             this._dependencies.addNode(fileExportSymbol);
             const fileEntity = parsedFile.getEntity(fileExportSymbol);
 
-            if (fileEntity instanceof Class) {
+            if (fileEntity instanceof Class || fileEntity instanceof Interface) {
                 fileEntity.getUsages().forEach(entityReferences => {
                     entityReferences.getReferenceTypes().forEach(entityReference => {
                         const entitySymbol = entityReference.getTypeName([], true);
