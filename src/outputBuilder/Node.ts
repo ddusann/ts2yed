@@ -166,8 +166,10 @@ export default class Node implements INode {
     private _getWidth(): number {
         const attributeSize = Math.max(...this._attributes.map(attr => attr.getPixelWidth()));
         const methodSize = Math.max(...this._methods.map(attr => attr.getPixelWidth()));
-        const titleSize = this._name.length * 8 + 20;
 
-        return Math.max(attributeSize, methodSize, titleSize, 50);
+        const titleSize = this._name.length * 8 + 20;
+        const stereotypeSize = (this._stereotype.length + 4) * 7.5 + 20;
+
+        return Math.max(attributeSize, methodSize, titleSize, stereotypeSize, 50);
     }
 }
