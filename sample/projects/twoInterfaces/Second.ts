@@ -6,4 +6,6 @@ export interface IMission {
     start(): void;
 }
 
-export interface IAnother extends IGroup {}
+export interface IAnother extends IGroup {
+    [key: number]: string;
+}
