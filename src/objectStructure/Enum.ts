@@ -23,27 +23,22 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import VisibilityType from '../VisibilityType';
+import GenericObject from './GenericObject';
 
-export default class Property {
-    private _label: string;
+export default class Enum extends GenericObject {
+    private _values: string[];
 
-    constructor(name: string, visibility: VisibilityType = VisibilityType.PRIVATE, type?: string) {
-        this._label = `${this._getVisibilitySign(visibility)} ${name}`;
-        if (type) {
-            this._label = `${this._label}: ${type}`;
-        }
+    constructor(name: string) {
+        super(name, 'enum');
+
+        this._values = [];
     }
 
-    getLabel(): string {
-        return this._label;
+    addValue(value: string): void {
+        this._values.push(value);
     }
 
-    private _getVisibilitySign(visibility: VisibilityType) {
-        switch (visibility) {
-            case VisibilityType.PUBLIC: return '+';
-            case VisibilityType.PROTECTED: return '#';
-            case VisibilityType.PRIVATE: return '-';
-        }
+    getValues(): string[] {
+        return this._values;
     }
 }

@@ -25,6 +25,7 @@
 
 import BidirectedForest from '../common/BidirectedForest';
 import Class from '../parser/Class';
+import Enum from '../parser/Enum';
 import Import from '../parser/Import';
 import Interface from '../parser/Interface';
 import ParsedFile from '../parser/ParsedFile';

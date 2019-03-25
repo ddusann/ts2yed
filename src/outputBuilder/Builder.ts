@@ -25,6 +25,7 @@
 
 import Class from '../objectStructure/Class';
 import Edge from './Edge';
+import Enum from '../objectStructure/Enum';
 import GenericObject from '../objectStructure/GenericObject';
 import Graph from './Graph';
 import Interface from '../objectStructure/Interface';
@@ -50,6 +51,11 @@ export default class Builder {
             const graphIfc = this._createInterfaceGraphNode(ifc);
             graph.addNode(graphIfc);
             graphNodes.set(ifc, graphIfc);
+        });
+        this._getEnums().forEach(enm => {
+            const graphIfc = this._createEnumGraphNode(enm);
+            graph.addNode(graphIfc);
+            graphNodes.set(enm, graphIfc);
         });
 
         this._entities.forEach(entity => {
@@ -113,6 +119,16 @@ export default class Builder {
         return node;
     }
 
+    private _createEnumGraphNode(enm: Enum): Node {
+        const node = new Node(enm.getName(), enm.getStereotype());
+
+        enm.getValues().forEach(value => {
+            node.addLine(value);
+        });
+
+        return node;
+    }
+
     private _createInterfaceGraphNode(ifc: Interface): Node {
         const node = new Node(ifc.getName(), ifc.getStereotype());
 
@@ -141,6 +157,10 @@ export default class Builder {
 
     private _getClasses(): Class[] {
         return this._entities.filter((entity: GenericObject): entity is Class => entity instanceof Class);
+    }
+
+    private _getEnums(): Enum[] {
+        return this._entities.filter((entity: GenericObject): entity is Enum => entity instanceof Enum);
     }
 
     private _getInterfaces(): Interface[] {

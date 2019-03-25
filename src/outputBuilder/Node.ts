@@ -32,7 +32,7 @@ import Property from './Property';
 import Rectangle from '../common/Rectangle';
 
 export default class Node implements INode {
-    private _attributes: Property[];
+    private _attributes: (Property|string)[];
     private _id: string;
     private _methods: Property[];
     private _name: string;
@@ -50,6 +50,10 @@ export default class Node implements INode {
 
     addAttribute(attribute: Property): void {
         this._attributes.push(attribute);
+    }
+
+    addLine(line: string): void {
+        this._attributes.push(line);
     }
 
     addMethod(method: Property): void {
@@ -93,7 +97,9 @@ export default class Node implements INode {
             .setAttribute('omitDetails', 'false')
             .setAttribute('stereotype', this._stereotype)
             .setAttribute('use3DEffect', 'true');
-        umlContent.addNode('y:AttributeLabel').setValue(this._attributes.map(attr => attr.getLabel()).join('\n'));
+        umlContent.addNode('y:AttributeLabel').setValue(this._attributes.map(attr => { 
+            return attr instanceof Property ? attr.getLabel() : attr;
+        }).join('\n'));
         umlContent.addNode('y:MethodLabel').setValue(this._methods.map(method => method.getLabel()).join('\n'));
 
         return umlContent;
@@ -163,9 +169,15 @@ export default class Node implements INode {
         return height;
     }
 
+    private _getPixelWidth(text: string): number {
+        return 20 + text.length * 7.3;
+    }
+
     private _getWidth(): number {
-        const attributeSize = Math.max(...this._attributes.map(attr => attr.getPixelWidth()));
-        const methodSize = Math.max(...this._methods.map(attr => attr.getPixelWidth()));
+        const attributeSize = Math.max(...this._attributes
+            .map(attr => this._getPixelWidth(attr instanceof Property ? attr.getLabel() : attr))
+        );
+        const methodSize = Math.max(...this._methods.map(attr => this._getPixelWidth(attr.getLabel())));
 
         const titleSize = this._name.length * 8 + 20;
         const stereotypeSize = (this._stereotype.length + 4) * 7.5 + 20;

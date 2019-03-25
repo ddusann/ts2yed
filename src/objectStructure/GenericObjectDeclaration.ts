@@ -29,14 +29,12 @@ import Property from './Property';
 export default class GenericObjectDeclaration extends GenericObject {
     private _attributes: Property[];
     private _methods: Property[];
-    private _name: string;
 
     constructor(name: string, stereotype: string) {
-        super(stereotype);
+        super(name, stereotype);
 
         this._attributes = [];
         this._methods = [];
-        this._name = name;
     }
 
     addAttribute(attribute: Property) {
@@ -53,9 +51,5 @@ export default class GenericObjectDeclaration extends GenericObject {
 
     getMethods(): Property[] {
         return this._methods;
-    }
-
-    getName(): string {
-        return this._name;
     }
 }

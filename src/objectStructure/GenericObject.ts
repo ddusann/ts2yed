@@ -31,14 +31,16 @@ interface IReplacement {
 export default abstract class GenericObject {
     private _extensions: GenericObject[];
     private _implementations: GenericObject[];
+    private _name: string;
     private _replacements: IReplacement[];
     private _stereotype: string;
     private _usages: GenericObject[];
 
-    constructor(stereotype: string) {
+    constructor(name: string, stereotype: string) {
         this._usages = [];
         this._extensions = [];
         this._implementations = [];
+        this._name = name;
         this._replacements = [];
         this._stereotype = stereotype;
     }
@@ -65,6 +67,10 @@ export default abstract class GenericObject {
 
     getImplementations(): GenericObject[] {
         return this._implementations;
+    }
+
+    getName(): string {
+        return this._name;
     }
 
     getReplacements(): IReplacement[] {

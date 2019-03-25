@@ -28,6 +28,7 @@ import Parser, { IParsedFile } from '../parser/Parser';
 import Attribute from '../parser/Attribute';
 import Class from './Class';
 import Constructor from '../parser/Constructor';
+import Enum from './Enum';
 import FileDependency from './FileDependency';
 import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
@@ -38,6 +39,7 @@ import { IReplacement } from '../parser/types/Type';
 import Interface from './Interface';
 import Method from '../parser/Method';
 import ParsedClass from '../parser/Class';
+import ParsedEnum from '../parser/Enum';
 import ParsedInterface from '../parser/Interface';
 import Property from './Property';
 import ReferenceType from '../parser/types/ReferenceType';
@@ -154,7 +156,16 @@ export default class Builder {
             this._addClass(fileName, entity, replacements);
         } else if (entity instanceof ParsedInterface) {
             this._addInterface(fileName, entity, replacements);
+        } else if (entity instanceof ParsedEnum) {
+            this._addEnum(fileName, entity);
         }
+    }
+
+    private _addEnum(fileName: FileName, parsedEnum: ParsedEnum): void {
+        const newEnum = new Enum(parsedEnum.getName());
+        this._entityStore.put(fileName, parsedEnum.getName(), newEnum);
+
+        parsedEnum.getValues().forEach(value => newEnum.addValue(value));
     }
 
     private _addExtensions(extensions: ReferenceType[], obj: GenericObject, fileName: FileName): void {
