@@ -73,6 +73,10 @@ export default class Class {
         return this._members.filter((member: Member): member is Getter => member instanceof Getter);
     }
 
+    getImplementations(): ReferenceType[] {
+        return this._implementations;
+    }
+
     getMethods(): Method[] {
         return this._members.filter((member: Member): member is Method => member instanceof Method);
     }

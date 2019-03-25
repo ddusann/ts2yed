@@ -57,7 +57,7 @@ export default class Builder {
                 const entityGraphNode = graphNodes.get(entity);
                 const usageGraphNode = graphNodes.get(usage);
                 if (!entityGraphNode || !usageGraphNode) {
-                    throw new Error('Graph nodes not found!');
+                    throw new Error('Graph node not found!');
                 }
 
                 graph.addEdge(new Edge(entityGraphNode, usageGraphNode, 'usage'));
@@ -65,12 +65,22 @@ export default class Builder {
 
             entity.getExtensions().forEach(extension => {
                 const entityGraphNode = graphNodes.get(entity);
-                const usageGraphNode = graphNodes.get(extension);
-                if (!entityGraphNode || !usageGraphNode) {
-                    throw new Error('Graph nodes not found!');
+                const extensionGraphNode = graphNodes.get(extension);
+                if (!entityGraphNode || !extensionGraphNode) {
+                    throw new Error('Graph node not found!');
                 }
 
-                graph.addEdge(new Edge(entityGraphNode, usageGraphNode, 'inheritance'));
+                graph.addEdge(new Edge(entityGraphNode, extensionGraphNode, 'inheritance'));
+            });
+
+            entity.getImplementations().forEach(implementation => {
+                const entityGraphNode = graphNodes.get(entity);
+                const implementationGraphNode = graphNodes.get(implementation);
+                if (!entityGraphNode || !implementationGraphNode) {
+                    throw new Error('Graph node not found!');
+                }
+
+                graph.addEdge(new Edge(entityGraphNode, implementationGraphNode, 'implementation'));
             });
         });
 

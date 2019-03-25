@@ -133,6 +133,7 @@ export default class Builder {
         this._addMethods(parsedClass.getMethods(), newClass, replacements);
 
         this._addUsages(parsedClass.getUsages(), newClass, fileName);
+        this._addImplementations(parsedClass.getImplementations(), newClass, fileName);
         this._addExtensions(parsedClass.getExtensions(), newClass, fileName);
     }
 
@@ -182,6 +183,17 @@ export default class Builder {
                 getter.getVisibilityType() || VisibilityType.PUBLIC,
                 getter.getType().getTypeName(replacements, false))
             );
+        });
+    }
+
+    private _addImplementations(implementations: ReferenceType[], obj: GenericObject, fileName: FileName): void {
+        implementations.forEach(extension => {
+            const implementedObject = this._entityStore.get(fileName, extension.getTypeName([], true));
+            if (!implementedObject) {
+                return;
+            }
+
+            obj.addImplementation(implementedObject);
         });
     }
 
