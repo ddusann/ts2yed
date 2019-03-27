@@ -30,6 +30,7 @@ import Enum from '../objectStructure/Enum';
 import GenericObject from '../objectStructure/GenericObject';
 import Graph from './Graph';
 import Interface from '../objectStructure/Interface';
+import Node from './Node';
 import Property from './Property';
 
 export default class Builder {
@@ -41,7 +42,7 @@ export default class Builder {
 
     getGraph(): Graph {
         const graph = new Graph();
-        const graphNodes = new Map<GenericObject, ClassNode>();
+        const graphNodes = new Map<GenericObject, Node>();
         this._getClasses().forEach(cls => {
             const graphClass = this._createClassGraphNode(cls);
             graph.addNode(graphClass);
