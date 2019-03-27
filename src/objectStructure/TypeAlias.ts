@@ -23,33 +23,18 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import ReferenceType from './types/ReferenceType';
-import Type from './types/Type';
+import GenericObject from './GenericObject';
 
-export default class TypeDefinition {
-    private _name: string;
-    private _type: Type;
-    private _typeParameters: ReferenceType[];
+export default class TypeAlias extends GenericObject {
+    private _value: string;
 
-    constructor(name: string, type: Type, typeParameters: ReferenceType[]) {
-        this._name = name;
-        this._type = type;
-        this._typeParameters = typeParameters;
+    constructor(name: string, value: string) {
+        super(name, '');
+
+        this._value = value;
     }
 
-    getName(): string {
-        return this._name;
-    }
-
-    getType(): Type {
-        return this._type;
-    }
-
-    getTypeParameters(): ReferenceType[] {
-        return this._typeParameters;
-    }
-
-    getUsages(): ReferenceType[] {
-        return this._type.getReferenceTypes() as ReferenceType[];
+    getValue(): string {
+        return this._value;
     }
 }

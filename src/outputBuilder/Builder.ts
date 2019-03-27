@@ -31,7 +31,9 @@ import GenericObject from '../objectStructure/GenericObject';
 import Graph from './Graph';
 import Interface from '../objectStructure/Interface';
 import Node from './Node';
+import NoteNode from './NoteNode';
 import Property from './Property';
+import TypeAlias from '../objectStructure/TypeAlias';
 
 export default class Builder {
     private _entities: GenericObject[];
@@ -57,6 +59,11 @@ export default class Builder {
             const graphIfc = this._createEnumGraphNode(enm);
             graph.addNode(graphIfc);
             graphNodes.set(enm, graphIfc);
+        });
+        this._getTypes().forEach(type => {
+            const graphType = this._createTypeGraphNode(type);
+            graph.addNote(graphType);
+            graphNodes.set(type, graphType);
         });
 
         this._entities.forEach(entity => {
@@ -156,6 +163,10 @@ export default class Builder {
         return node;
     }
 
+    private _createTypeGraphNode(type: TypeAlias): NoteNode {
+        return new NoteNode(`${type.getName()} = ${type.getValue()}`);
+    }
+
     private _getClasses(): Class[] {
         return this._entities.filter((entity: GenericObject): entity is Class => entity instanceof Class);
     }
@@ -166,5 +177,9 @@ export default class Builder {
 
     private _getInterfaces(): Interface[] {
         return this._entities.filter((entity: GenericObject): entity is Interface => entity instanceof Interface);
+    }
+
+    private _getTypes(): TypeAlias[] {
+        return this._entities.filter((entity: GenericObject): entity is TypeAlias => entity instanceof TypeAlias);
     }
 }

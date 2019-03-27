@@ -25,12 +25,11 @@
 
 import AbstractNode from '../xml/AbstractNode';
 import ElementDescriptions from './ElementDescriptions';
-import INode from '../common/INode';
 import Node from './Node';
 import Property from './Property';
 import Rectangle from '../common/Rectangle';
 
-export default class ClassNode extends Node implements INode {
+export default class ClassNode extends Node {
     private _attributes: (Property|string)[];
     private _methods: Property[];
     private _name: string;

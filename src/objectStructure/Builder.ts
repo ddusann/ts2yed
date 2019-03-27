@@ -45,6 +45,8 @@ import Property from './Property';
 import ReferenceType from '../parser/types/ReferenceType';
 import Setter from '../parser/Setter';
 import Store from './Store';
+import TypeAlias from './TypeAlias';
+import TypeDefinition from '../parser/TypeDefinition';
 import VisibilityType from '../VisibilityType';
 import _ from 'lodash';
 import fs from 'fs';
@@ -158,6 +160,8 @@ export default class Builder {
             this._addInterface(fileName, entity, replacements);
         } else if (entity instanceof ParsedEnum) {
             this._addEnum(fileName, entity);
+        } else if (entity instanceof TypeDefinition) {
+            this._addTypeDefinition(fileName, entity, replacements);
         }
     }
 
@@ -322,6 +326,15 @@ export default class Builder {
         });
     }
 
+    private _addTypeDefinition(fileName: FileName, parsedType: TypeDefinition, replacements: IReplacement[]): void {
+        replacements = this._removeOverlappedReplacements(parsedType.getTypeParameters(), replacements);
+        const typeAlias = parsedType.getType().getTypeName(replacements, false);
+        const name = this._getNameWithTypeParameters(parsedType);
+        const newTypeAlias = new TypeAlias(name, typeAlias);
+
+        this._entityStore.put(fileName, parsedType.getName(), newTypeAlias);
+    }
+
     private _addUsages(usages: ReferenceType[], obj: GenericObject, fileName: FileName): void {
         usages.forEach(usage => {
             const usageObject = this._entityStore.get(fileName, usage.getTypeName([], true));
@@ -360,7 +373,7 @@ export default class Builder {
         });
     }
 
-    private _getNameWithTypeParameters(cls: ParsedClass|ParsedInterface): string {
+    private _getNameWithTypeParameters(cls: ParsedClass|ParsedInterface|TypeDefinition): string {
         const typeList = cls.getTypeParameters().map(tp => tp.getTypeName([], false));
         const typeListInString = typeList.length > 0 ? `<${typeList.join(', ')}>` : '';
         return cls.getName() + typeListInString;

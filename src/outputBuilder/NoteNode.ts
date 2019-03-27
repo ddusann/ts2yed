@@ -25,24 +25,20 @@
 
 import AbstractNode from '../xml/AbstractNode';
 import ElementDescriptions from './ElementDescriptions';
-import INode from '../common/INode';
-import IdGenerator from './IdGenerator';
-import Point from '../common/Point';
+import Node from './Node';
 
-export default class NoteNode implements INode {
+export default class NoteNode extends Node {
     private _content: string;
-    private _id: string;
-    private _position: Point;
 
     constructor(content: string) {
-        this._id = IdGenerator.get('n');
+        super();
+
         this._content = content;
-        this._position = new Point(0, 0);
     }
 
     generateNode(parent: AbstractNode): AbstractNode {
         const node = parent.addNode('node');
-        node.setAttribute('id', this._id);
+        node.setAttribute('id', this.getId());
 
         const data = node.addNode('data');
         data.setAttribute('key', ElementDescriptions.get('nodeGraphics')!.getId());
@@ -51,13 +47,21 @@ export default class NoteNode implements INode {
         return node;
     }
 
+    getHeight(): number {
+        return 28;
+    }
+
+    getWidth(): number {
+        return this._content.length * 7.25 + 40;
+    }
+
     private _generateUmlNode(parent: AbstractNode): AbstractNode {
         const umlNode = parent.addNode('y:UMLNoteNode');
         umlNode.addNode('y:Geometry')
-            .setAttribute('height', this._getHeight().toString())
-            .setAttribute('width', this._getWidth().toString())
-            .setAttribute('x', this._position.x.toString())
-            .setAttribute('y', this._position.y.toString());
+            .setAttribute('height', this.getHeight().toString())
+            .setAttribute('width', this.getWidth().toString())
+            .setAttribute('x', this.getPosition().x.toString())
+            .setAttribute('y', this.getPosition().y.toString());
         umlNode.addNode('y:Fill')
             .setAttribute('color', '#FF9900')
             .setAttribute('transparent', 'false');
@@ -102,13 +106,5 @@ export default class NoteNode implements INode {
             .setAttribute('upY', '-1.0');
 
         return nodeLabel;
-    }
-
-    private _getHeight(): number {
-        return 28;
-    }
-
-    private _getWidth(): number {
-        return this._content.length * 7.25 + 40;
     }
 }

@@ -23,12 +23,15 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import ParsedFile, { FileEntity } from '../parser/ParsedFile';
+
 import BidirectedForest from '../common/BidirectedForest';
 import Class from '../parser/Class';
 import Enum from '../parser/Enum';
 import Import from '../parser/Import';
 import Interface from '../parser/Interface';
-import ParsedFile from '../parser/ParsedFile';
+import TypeAlias from './TypeAlias';
+import TypeDefinition from '../parser/TypeDefinition';
 
 export default class FileEntityDependency {
     private _dependencies: BidirectedForest<string>;
@@ -45,7 +48,7 @@ export default class FileEntityDependency {
             this._dependencies.addNode(fileExportSymbol);
             const fileEntity = parsedFile.getEntity(fileExportSymbol);
 
-            if (fileEntity instanceof Class || fileEntity instanceof Interface) {
+            if (this._mayContainSubtypes(fileEntity)) {
                 fileEntity.getUsages().forEach(entityReferences => {
                     entityReferences.getReferenceTypes().forEach(entityReference => {
                         const entitySymbol = entityReference.getTypeName([], true);
@@ -77,5 +80,11 @@ export default class FileEntityDependency {
 
     hasSymbols(): boolean {
         return this._dependencies.hasNodes();
+    }
+
+    private _mayContainSubtypes(entity: FileEntity|undefined): entity is Class|Interface|TypeDefinition {
+        return entity instanceof Class
+            || entity instanceof Interface
+            || entity instanceof TypeDefinition;
     }
 }
