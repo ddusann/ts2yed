@@ -24,12 +24,12 @@
  */
 
 import Class from '../objectStructure/Class';
+import ClassNode from './ClassNode';
 import Edge from './Edge';
 import Enum from '../objectStructure/Enum';
 import GenericObject from '../objectStructure/GenericObject';
 import Graph from './Graph';
 import Interface from '../objectStructure/Interface';
-import Node from './Node';
 import Property from './Property';
 
 export default class Builder {
@@ -41,7 +41,7 @@ export default class Builder {
 
     getGraph(): Graph {
         const graph = new Graph();
-        const graphNodes = new Map<GenericObject, Node>();
+        const graphNodes = new Map<GenericObject, ClassNode>();
         this._getClasses().forEach(cls => {
             const graphClass = this._createClassGraphNode(cls);
             graph.addNode(graphClass);
@@ -93,8 +93,8 @@ export default class Builder {
         return graph;
     }
 
-    private _createClassGraphNode(cls: Class): Node {
-        const node = new Node(cls.getName(), cls.getStereotype());
+    private _createClassGraphNode(cls: Class): ClassNode {
+        const node = new ClassNode(cls.getName(), cls.getStereotype());
 
         cls.getAttributes()
             .forEach(attribute =>
@@ -119,8 +119,8 @@ export default class Builder {
         return node;
     }
 
-    private _createEnumGraphNode(enm: Enum): Node {
-        const node = new Node(enm.getName(), enm.getStereotype());
+    private _createEnumGraphNode(enm: Enum): ClassNode {
+        const node = new ClassNode(enm.getName(), enm.getStereotype());
 
         enm.getValues().forEach(value => {
             node.addLine(value);
@@ -129,8 +129,8 @@ export default class Builder {
         return node;
     }
 
-    private _createInterfaceGraphNode(ifc: Interface): Node {
-        const node = new Node(ifc.getName(), ifc.getStereotype());
+    private _createInterfaceGraphNode(ifc: Interface): ClassNode {
+        const node = new ClassNode(ifc.getName(), ifc.getStereotype());
 
         ifc.getAttributes().forEach(attribute =>
             node.addAttribute(new Property(
