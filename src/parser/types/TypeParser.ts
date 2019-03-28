@@ -28,6 +28,7 @@ import Attribute from '../Attribute';
 import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
+import IntersectionType from './IntersectionType';
 import ModifierType from '../IModifier';
 import NullType from './NullType';
 import NumberType from './NumberType';
@@ -37,6 +38,7 @@ import ParenthesizedType from './ParenthesizedType';
 import ReferenceType from './ReferenceType';
 import StringType from './StringType';
 import Type from './Type';
+import TypeOfType from './TypeOfType';
 import UndefinedType from './UndefinedType';
 import UnionType from './UnionType';
 import VoidType from './VoidType';
@@ -60,7 +62,7 @@ export default abstract class TypeParser {
                 TypeParser._parseTypeParameters(node)
             );
             case ts.SyntaxKind.UnionType: return new UnionType(TypeParser._parseUnionTypes(node));
-            case ts.SyntaxKind.IntersectionType: return new UnionType(TypeParser._parseIntersectionTypes(node));
+            case ts.SyntaxKind.IntersectionType: return new IntersectionType(TypeParser._parseIntersectionTypes(node));
             case ts.SyntaxKind.ConditionalType: return TypeParser._parseConditionType(node);
             case ts.SyntaxKind.VoidKeyword: return new VoidType();
             case ts.SyntaxKind.NullKeyword: return new NullType();
@@ -70,6 +72,7 @@ export default abstract class TypeParser {
                 TypeParser._parseTypeParameters(node)
             );
             case ts.SyntaxKind.ParenthesizedType: return new ParenthesizedType(TypeParser.parse(node.type));
+            case ts.SyntaxKind.TypeQuery: return new TypeOfType(new ReferenceType(node.exprName.text, []));
             default: throw new Error('Unknown type!');
         }
     }

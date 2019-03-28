@@ -23,46 +23,28 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION,
-    NOT_DEFINED,
-    NULL,
-    UNDEFINED,
-    PARENTHESIS,
-    TYPEOF
-}
+import Type, { IReplacement, TypeCategory } from './Type';
 
-export interface IReplacement {
-    from: string;
-    to: string;
-}
+import ReferenceType from './ReferenceType';
 
-export default abstract class Type {
-    static makeReferenceTypeUnique(references: Type[], hideTypeParameters: boolean = false) {
-        const usedTypes: string[] = [];
+export default class TypeOfType extends Type {
+    private _type: ReferenceType;
 
-        return references.filter(reference => {
-            const referenceTypeName = reference.getTypeName([], hideTypeParameters);
-            if (usedTypes.includes(referenceTypeName)) {
-                return false;
-            }
+    constructor(type: ReferenceType) {
+        super();
 
-            usedTypes.push(referenceTypeName);
-            return true;
-        });
+        this._type = type;
     }
 
-    abstract getReferenceTypes(): Type[];
-    abstract getType(): TypeCategory;
-    abstract getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string;
+    getReferenceTypes(): Type[] {
+        return this._type.getReferenceTypes();
+    }
+
+    getType(): TypeCategory {
+        return TypeCategory.TYPEOF;
+    }
+
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        return `typeof ${this._type.getTypeName(replacements, hideTypeParameters)}`;
+    }
 }
