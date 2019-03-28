@@ -27,11 +27,9 @@ import ParsedFile, { FileEntity } from '../parser/ParsedFile';
 
 import BidirectedForest from '../common/BidirectedForest';
 import Class from '../parser/Class';
-import Enum from '../parser/Enum';
 import Import from '../parser/Import';
 import Interface from '../parser/Interface';
 import ParsedFunction from '../parser/Function';
-import TypeAlias from './TypeAlias';
 import TypeDefinition from '../parser/TypeDefinition';
 
 export default class FileEntityDependency {
