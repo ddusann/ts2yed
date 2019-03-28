@@ -27,6 +27,7 @@ import Class from '../objectStructure/Class';
 import ClassNode from './ClassNode';
 import Edge from './Edge';
 import Enum from '../objectStructure/Enum';
+import FunctionDef from '../objectStructure/Function';
 import GenericObject from '../objectStructure/GenericObject';
 import Graph from './Graph';
 import Interface from '../objectStructure/Interface';
@@ -59,6 +60,11 @@ export default class Builder {
             const graphIfc = this._createEnumGraphNode(enm);
             graph.addNode(graphIfc);
             graphNodes.set(enm, graphIfc);
+        });
+        this._getFunctions().forEach(func => {
+            const graphType = this._createFunctionGraphNode(func);
+            graph.addNote(graphType);
+            graphNodes.set(func, graphType);
         });
         this._getTypes().forEach(type => {
             const graphType = this._createTypeGraphNode(type);
@@ -137,6 +143,16 @@ export default class Builder {
         return node;
     }
 
+    private _createFunctionGraphNode(func: FunctionDef): NoteNode {
+        const parameters = func.getParameters().map(parameter => {
+            return `${parameter.name}: ${parameter.type}`;
+        }).join(', ');
+        const typeParameters = func.getTypeParameters().length > 0
+            ? '<' + func.getTypeParameters().join(', ') + '>'
+            : '';
+        return new NoteNode(`${func.getName()} = function(${parameters})${typeParameters}: ${func.getType()}`);
+    }
+
     private _createInterfaceGraphNode(ifc: Interface): ClassNode {
         const node = new ClassNode(ifc.getName(), ifc.getStereotype());
 
@@ -173,6 +189,10 @@ export default class Builder {
 
     private _getEnums(): Enum[] {
         return this._entities.filter((entity: GenericObject): entity is Enum => entity instanceof Enum);
+    }
+
+    private _getFunctions(): FunctionDef[] {
+        return this._entities.filter((entity: GenericObject): entity is FunctionDef => entity instanceof FunctionDef);
     }
 
     private _getInterfaces(): Interface[] {

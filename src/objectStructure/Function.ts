@@ -23,55 +23,31 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Parameter from './Parameter';
-import ReferenceType from './types/ReferenceType';
-import Type from './types/Type';
-import _ from 'lodash';
+import GenericObject from './GenericObject';
+import IParameter from './IParameter';
 
-export interface IKeyName {
-    name: string;
-    type: Type;
-}
+export default class Function extends GenericObject {
+    private _parameters: IParameter[];
+    private _type: string;
+    private _typeParameters: string[];
 
-export default class Function {
-    private static _anonymousCounter = 0;
+    constructor(name: string, parameters: IParameter[], typeParameters: string[], type: string) {
+        super(name, '');
 
-    private _name: string;
-    private _parameters: Parameter[];
-    private _type: Type;
-    private _typeParameters: ReferenceType[];
-
-    constructor(
-        parameters: Parameter[],
-        type: Type,
-        typeParameters: ReferenceType[],
-        name?: string
-    ) {
-        this._name = name ? name : `_anonymous_${++Function._anonymousCounter}_`;
-        this._type = type;
         this._parameters = parameters;
         this._typeParameters = typeParameters;
+        this._type = type;
     }
 
-    getName(): string {
-        return this._name;
-    }
-
-    getParameters(): Parameter[] {
+    getParameters(): IParameter[] {
         return this._parameters;
     }
 
-    getType(): Type {
+    getType(): string {
         return this._type;
     }
 
-    getTypeParameters(): ReferenceType[] {
+    getTypeParameters(): string[] {
         return this._typeParameters;
-    }
-
-    getUsages(): ReferenceType[] {
-        return Type.makeReferenceTypeUnique(this._type.getReferenceTypes()
-            .concat(_.flatten(this._parameters.map(param => param.getReferenceTypes())))
-            .concat(_.flatten(this._typeParameters.map(param => param.getReferenceTypes())))) as ReferenceType[];
     }
 }

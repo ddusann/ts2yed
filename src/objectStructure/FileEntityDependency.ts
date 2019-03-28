@@ -30,6 +30,7 @@ import Class from '../parser/Class';
 import Enum from '../parser/Enum';
 import Import from '../parser/Import';
 import Interface from '../parser/Interface';
+import ParsedFunction from '../parser/Function';
 import TypeAlias from './TypeAlias';
 import TypeDefinition from '../parser/TypeDefinition';
 
@@ -82,9 +83,10 @@ export default class FileEntityDependency {
         return this._dependencies.hasNodes();
     }
 
-    private _mayContainSubtypes(entity: FileEntity|undefined): entity is Class|Interface|TypeDefinition {
+    private _mayContainSubtypes(entity: FileEntity|undefined): entity is Class|Interface|TypeDefinition|ParsedFunction {
         return entity instanceof Class
             || entity instanceof Interface
-            || entity instanceof TypeDefinition;
+            || entity instanceof TypeDefinition
+            || entity instanceof ParsedFunction;
     }
 }

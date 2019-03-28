@@ -32,15 +32,18 @@ import Enum from './Enum';
 import FileDependency from './FileDependency';
 import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
+import Function from './Function';
 import GenericObject from './GenericObject';
 import GenericObjectDeclaration from './GenericObjectDeclaration';
 import Getter from '../parser/Getter';
+import IParameter from './IParameter';
 import { IReplacement } from '../parser/types/Type';
 import Interface from './Interface';
 import Method from '../parser/Method';
 import ParsedClass from '../parser/Class';
 import ParsedEnum from '../parser/Enum';
 import ParsedInterface from '../parser/Interface';
+import ParserFunction from '../parser/Function';
 import Property from './Property';
 import ReferenceType from '../parser/types/ReferenceType';
 import Setter from '../parser/Setter';
@@ -162,6 +165,8 @@ export default class Builder {
             this._addEnum(fileName, entity);
         } else if (entity instanceof TypeDefinition) {
             this._addTypeDefinition(fileName, entity, replacements);
+        } else if (entity instanceof ParserFunction) {
+            this._addFunction(fileName, entity, replacements);
         }
     }
 
@@ -181,6 +186,21 @@ export default class Builder {
 
             obj.addExtension(usageObject);
         });
+    }
+
+    private _addFunction(fileName: FileName, parsedFunc: ParserFunction, replacements: IReplacement[] = []): void {
+        const parameters = parsedFunc.getParameters().map<IParameter>(parameter => ({
+            name: parameter.getName(),
+            type: parameter.getType().getTypeName(replacements, false)
+        }));
+        const typeParameters = parsedFunc.getTypeParameters().map(parameter => {
+            return parameter.getTypeName(replacements, false);
+        });
+        const type = parsedFunc.getType().getTypeName(replacements, false);
+        const newFunction = new Function(parsedFunc.getName(), parameters, typeParameters, type);
+        this._entityStore.put(fileName, parsedFunc.getName(), newFunction);
+
+        this._addUsages(parsedFunc.getUsages(), newFunction, fileName);
     }
 
     private _addGettersIntoClass(getters: Getter[], cls: Class, replacements: IReplacement[]): void {

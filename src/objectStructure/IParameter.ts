@@ -23,47 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import IParameter from './IParameter';
-import VisibilityType from '../VisibilityType';
-
-export default class Property {
-    private _isAbstract: boolean;
-    private _isStatic: boolean;
-    private _name: string;
-    private _parameters: IParameter[];
-    private _type: string;
-    private _visibility: VisibilityType;
-
-    constructor(name: string, visibility: VisibilityType, type: string, parameters: IParameter[] = []) {
-        this._name = name;
-        this._visibility = visibility;
-        this._isAbstract = false;
-        this._isStatic = false;
-        this._parameters = parameters;
-        this._type = type;
-    }
-
-    getName(): string {
-        return this._name;
-    }
-
-    getParameters(): IParameter[] {
-        return this._parameters;
-    }
-
-    getType(): string {
-        return this._type;
-    }
-
-    getVisibility(): VisibilityType {
-        return this._visibility;
-    }
-
-    isAbstract(): boolean {
-        return this._isAbstract;
-    }
-
-    isStatic(): boolean {
-        return this._isStatic;
-    }
+export default interface IParameter {
+    name: string;
+    type: string;
 }
