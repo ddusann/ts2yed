@@ -45,6 +45,10 @@ export default class BidirectedForest<NodeType> {
     }
 
     addRelation(parent: NodeType, child: NodeType): void {
+        if (parent === child) {
+            throw new Error('Self relations are not allowed!');
+        }
+
         if (!this._allNodes.has(parent)) {
             this._addParent(parent, child);
         } else {

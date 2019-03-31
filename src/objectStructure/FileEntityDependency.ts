@@ -51,6 +51,10 @@ export default class FileEntityDependency {
                 fileEntity.getUsages().forEach(entityReferences => {
                     entityReferences.getReferenceTypes().forEach(entityReference => {
                         const entitySymbol = entityReference.getTypeName([], true);
+                        if (entitySymbol === fileExportSymbol) {
+                            return;
+                        }
+
                         const entity = parsedFile.getEntity(entitySymbol);
 
                         if (entity) {

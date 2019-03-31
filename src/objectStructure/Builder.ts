@@ -361,8 +361,15 @@ export default class Builder {
     }
 
     private _addUsages(usages: ReferenceType[], obj: GenericObject, fileName: FileName): void {
+        const objName = obj.getName();
+
         usages.forEach(usage => {
-            const usageObject = this._entityStore.get(fileName, usage.getTypeName([], true));
+            const usageObjectName = usage.getTypeName([], true);
+            if (objName === usageObjectName) {
+                return;
+            }
+
+            const usageObject = this._entityStore.get(fileName, usageObjectName);
             if (!usageObject) {
                 return;
             }
