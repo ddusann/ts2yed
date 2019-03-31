@@ -23,6 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import AnyType from './AnyType';
 import ArrayType from './ArrayType';
 import Attribute from '../Attribute';
 import BooleanType from './BooleanType';
@@ -80,6 +81,7 @@ export default abstract class TypeParser {
                 TypeParser.parse(node.type)
             );
             case ts.SyntaxKind.LiteralType: return new StringLiteralType(node.literal.text);
+            case ts.SyntaxKind.AnyKeyword: return new AnyType();
             default: throw new Error('Unknown type!');
         }
     }
