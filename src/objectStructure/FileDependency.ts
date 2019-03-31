@@ -51,7 +51,9 @@ export default class FileDependency {
             fileNode = this._allNodes.get(sourceFile)!;
         }
 
-        this._treeFinalLeaves.push(fileNode);
+        if (!this._treeFinalLeaves.includes(fileNode)) {
+            this._treeFinalLeaves.push(fileNode);
+        }
 
         dependencies.forEach(dependency => this._addDependency(fileNode, dependency));
     }
@@ -117,7 +119,7 @@ export default class FileDependency {
             this._treeFinalLeaves.splice(finalLeafIndex, 1);
         }
 
-        if (!this._treeFinalLeaves.includes(to)) {
+        if (to.leaves.length === 0 && !this._treeFinalLeaves.includes(to)) {
             this._treeFinalLeaves.push(to);
         }
     }
