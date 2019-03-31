@@ -29,6 +29,7 @@ import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
 import IntersectionType from './IntersectionType';
+import IsType from './IsType';
 import ModifierType from '../IModifier';
 import NullType from './NullType';
 import NumberType from './NumberType';
@@ -73,6 +74,10 @@ export default abstract class TypeParser {
             );
             case ts.SyntaxKind.ParenthesizedType: return new ParenthesizedType(TypeParser.parse(node.type));
             case ts.SyntaxKind.TypeQuery: return new TypeOfType(new ReferenceType(node.exprName.text, []));
+            case ts.SyntaxKind.TypePredicate: return new IsType(
+                node.parameterName.text,
+                TypeParser.parse(node.type)
+            );
             default: throw new Error('Unknown type!');
         }
     }
