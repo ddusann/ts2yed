@@ -37,6 +37,7 @@ import ObjectType from './ObjectType';
 import Parameter from '../Parameter';
 import ParenthesizedType from './ParenthesizedType';
 import ReferenceType from './ReferenceType';
+import StringLiteralType from './StringLiteralType';
 import StringType from './StringType';
 import Type from './Type';
 import TypeOfType from './TypeOfType';
@@ -78,6 +79,7 @@ export default abstract class TypeParser {
                 node.parameterName.text,
                 TypeParser.parse(node.type)
             );
+            case ts.SyntaxKind.LiteralType: return new StringLiteralType(node.literal.text);
             default: throw new Error('Unknown type!');
         }
     }

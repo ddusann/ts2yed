@@ -23,48 +23,26 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION,
-    NOT_DEFINED,
-    NULL,
-    UNDEFINED,
-    PARENTHESIS,
-    TYPEOF,
-    IS,
-    STRING_LITERAL
-}
+import Type, { TypeCategory } from './Type';
 
-export interface IReplacement {
-    from: string;
-    to: string;
-}
+export default class StringLiteralType extends Type {
+    private _name: string;
 
-export default abstract class Type {
-    static makeReferenceTypeUnique(references: Type[], hideTypeParameters: boolean = false) {
-        const usedTypes: string[] = [];
+    constructor(name: string) {
+        super();
 
-        return references.filter(reference => {
-            const referenceTypeName = reference.getTypeName([], hideTypeParameters);
-            if (usedTypes.includes(referenceTypeName)) {
-                return false;
-            }
-
-            usedTypes.push(referenceTypeName);
-            return true;
-        });
+        this._name = name;
     }
 
-    abstract getReferenceTypes(): Type[];
-    abstract getType(): TypeCategory;
-    abstract getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string;
+    getReferenceTypes(): Type[] {
+        return [];
+    }
+
+    getType(): TypeCategory {
+        return TypeCategory.STRING_LITERAL;
+    }
+
+    getTypeName(): string {
+        return `'${this._name}'`;
+    }
 }
