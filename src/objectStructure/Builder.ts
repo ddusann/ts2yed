@@ -236,7 +236,12 @@ export default class Builder {
         const replacements: IReplacement[] = [];
         const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
         parsedFile.getImports().forEach(imp => {
-            const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [imp.getFileName()])[0];
+            const importFileName = imp.getFileName();
+            if (importFileName[0] !== '.') {
+                return;
+            }
+
+            const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [importFileName])[0];
             const importedParsedFileObj = this._files.find(file => file.fileName === importFilePath);
             if (!importedParsedFileObj) {
                 throw new Error(`Unknown file '${importFilePath}'!`);
