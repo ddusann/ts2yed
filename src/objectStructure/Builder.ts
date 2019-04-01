@@ -81,12 +81,17 @@ export default class Builder {
 
         while (tsFileList.hasFile()) {
             const fileName = tsFileList.getFile();
+            const parsedFile = this._files.find(file => file.fileName === fileName);
+            if (!parsedFile) {
+                console.debug(`'${fileName}' was not parsed!`);
+                continue;
+            }
+
             const replacements = this._addImportsIntoStore(fileName);
-            const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
-            const fileEntityDependencies = new FileEntityDependency(parsedFile);
+            const fileEntityDependencies = new FileEntityDependency(parsedFile.file);
             while (fileEntityDependencies.hasSymbols()) {
                 const fileEntitySymbol = fileEntityDependencies.getSymbol();
-                const entity = parsedFile.getEntity(fileEntitySymbol);
+                const entity = parsedFile.file.getEntity(fileEntitySymbol);
                 if (!entity) {
                     throw new Error('Unknown entity!');
                 }
@@ -244,7 +249,8 @@ export default class Builder {
             const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [importFileName])[0];
             const importedParsedFileObj = this._files.find(file => file.fileName === importFilePath);
             if (!importedParsedFileObj) {
-                throw new Error(`Unknown file '${importFilePath}'!`);
+                console.debug(`'${importFilePath}' was not parsed!`);
+                return;
             }
 
             const importedParsedFile = importedParsedFileObj.file;
