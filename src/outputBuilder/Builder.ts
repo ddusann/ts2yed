@@ -34,13 +34,17 @@ import Interface from '../objectStructure/Interface';
 import Node from './Node';
 import NoteNode from './NoteNode';
 import Property from './Property';
+import Settings from './Settings';
 import TypeAlias from '../objectStructure/TypeAlias';
+import VisibilityType from '../VisibilityType';
 
 export default class Builder {
     private _entities: GenericObject[];
+    private _settings: Settings;
 
-    constructor(entities: GenericObject[]) {
+    constructor(entities: GenericObject[], settings: Settings = new Settings()) {
         this._entities = entities;
+        this._settings = settings;
     }
 
     getGraph(): Graph {
@@ -111,14 +115,23 @@ export default class Builder {
         const node = new ClassNode(cls.getName(), cls.getStereotype());
 
         cls.getAttributes()
-            .forEach(attribute =>
-                node.addAttribute(new Property(
+            .forEach(attribute => {
+                if (this._settings.getHidePrivateMembers() && attribute.getVisibility() === VisibilityType.PRIVATE) {
+                    return;
+                }
+
+                return node.addAttribute(new Property(
                     attribute.getName(),
                     attribute.getVisibility(),
                     attribute.getType()
-                )));
+                ));
+            });
 
         cls.getMethods().forEach(method => {
+            if (this._settings.getHidePrivateMembers() && method.getVisibility() === VisibilityType.PRIVATE) {
+                return;
+            }
+
             const parameters = method.getParameters()
                 .map(parameter => `${parameter.name}: ${parameter.type}`)
                 .join(', ');
