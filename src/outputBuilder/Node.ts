@@ -32,9 +32,11 @@ import Rectangle from '../common/Rectangle';
 export default abstract class Node implements INode {
     private _id: string;
     private _position: Point;
+    private _prefix: string;
 
     constructor() {
         this._id = IdGenerator.get('n');
+        this._prefix = '';
         this._position = new Point(0, 0);
     }
 
@@ -49,7 +51,7 @@ export default abstract class Node implements INode {
     abstract getHeight(): number;
 
     getId(): string {
-        return this._id;
+        return `${this._prefix}${this._id}`;
     }
 
     getPosition(): Point {
@@ -59,5 +61,9 @@ export default abstract class Node implements INode {
 
     setPosition(point: Point): void {
         this._position = point;
+    }
+
+    setPrefix(prefix: string): void {
+        this._prefix = `${prefix}:`;
     }
 }

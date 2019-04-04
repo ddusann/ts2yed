@@ -40,11 +40,9 @@ import VisibilityType from '../VisibilityType';
 
 export default class Builder {
     private _entities: GenericObject[];
-    private _settings: Settings;
 
-    constructor(entities: GenericObject[], settings: Settings = new Settings()) {
+    constructor(entities: GenericObject[]) {
         this._entities = entities;
-        this._settings = settings;
     }
 
     getGraph(): Graph {
@@ -113,10 +111,11 @@ export default class Builder {
 
     private _createClassGraphNode(cls: Class): ClassNode {
         const node = new ClassNode(cls.getName(), cls.getStereotype());
+        const settings = Settings.getSettings();
 
         cls.getAttributes()
             .forEach(attribute => {
-                if (this._settings.getHidePrivateMembers() && attribute.getVisibility() === VisibilityType.PRIVATE) {
+                if (settings.getHidePrivateMembers() && attribute.getVisibility() === VisibilityType.PRIVATE) {
                     return;
                 }
 
@@ -128,7 +127,7 @@ export default class Builder {
             });
 
         cls.getMethods().forEach(method => {
-            if (this._settings.getHidePrivateMembers() && method.getVisibility() === VisibilityType.PRIVATE) {
+            if (settings.getHidePrivateMembers() && method.getVisibility() === VisibilityType.PRIVATE) {
                 return;
             }
 

@@ -23,38 +23,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export default class Settings {
-    private static _settings?: Settings;
+import AbstractNode from '../xml/AbstractNode';
+import INode from '../common/INode';
 
-    static getSettings(): Settings {
-        if (!Settings._settings) {
-            Settings._settings = new Settings();
-        }
-
-        return Settings._settings;
-    }
-
-    private _fontFamily: string;
-    private _hidePrivateMembers: boolean;
-
-    private constructor() {
-        this._hidePrivateMembers = true;
-        this._fontFamily = 'FreeMono';
-    }
-
-    getFontFamily(): string {
-        return this._fontFamily;
-    }
-
-    getHidePrivateMembers(): boolean {
-        return this._hidePrivateMembers;
-    }
-
-    setFontFamily(font: string): void {
-        this._fontFamily = font;
-    }
-
-    setHidePrivateMembers(hide: boolean): void {
-        this._hidePrivateMembers = hide;
-    }
+export default abstract class AbstractGraph implements INode {
+    abstract generateNode(parent: AbstractNode): AbstractNode;
+    abstract setId(id: string): void;
 }

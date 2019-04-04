@@ -23,25 +23,35 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import AbstractGraph from './AbstractGraph';
 import AbstractNode from '../xml/AbstractNode';
 import ClassNode from './ClassNode';
 import Edge from './Edge';
-import INode from '../common/INode';
+import GroupNode from './GroupNode';
 import NoteNode from './NoteNode';
 
-export default class Graph implements INode {
-    private _edges: Edge[];
-    private _nodes: ClassNode[];
-    private _noteNodes: NoteNode[];
+export default class Graph extends AbstractGraph {
+    protected _edges: Edge[];
+    protected _groups: GroupNode[];
+    protected _nodes: ClassNode[];
+    protected _noteNodes: NoteNode[];
+    private _id?: string;
 
     constructor() {
+        super();
+
         this._edges = [];
+        this._groups = [];
         this._nodes = [];
         this._noteNodes = [];
     }
 
     addEdge(edge: Edge): void {
         this._edges.push(edge);
+    }
+
+    addGroup(name: string, group: Graph): void {
+        this._groups.push(new GroupNode(name, group));
     }
 
     addNode(node: ClassNode): void {
@@ -55,9 +65,19 @@ export default class Graph implements INode {
     generateNode(parent: AbstractNode): AbstractNode {
         const graph = parent.addNode('graph');
         graph.setAttribute('edgedefault', 'directed');
-        graph.setAttribute('id', 'G');
+        graph.setAttribute('id', this._id || 'G');
+
+        this._groups.forEach(group => {
+            if (this._id) {
+                group.setPrefix(`${this._id}`);
+            }
+            group.generateNode(graph);
+        });
 
         this._nodes.forEach(node => {
+            if (this._id) {
+                node.setPrefix(`${this._id}`);
+            }
             node.generateNode(graph);
         });
 
@@ -66,9 +86,16 @@ export default class Graph implements INode {
         });
 
         this._noteNodes.forEach(note => {
+            if (this._id) {
+                note.setPrefix(`${this._id}`);
+            }
             note.generateNode(graph);
         });
 
         return graph;
+    }
+
+    setId(id: string): void {
+        this._id = id;
     }
 }
