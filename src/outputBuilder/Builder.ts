@@ -23,6 +23,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import Folder, { IFolder } from '../objectStructure/Folder';
+
 import Class from '../objectStructure/Class';
 import ClassNode from './ClassNode';
 import Edge from './Edge';
@@ -38,43 +40,20 @@ import Settings from './Settings';
 import TypeAlias from '../objectStructure/TypeAlias';
 import VisibilityType from '../VisibilityType';
 
-export default class Builder {
-    private _entities: GenericObject[];
+type GraphNodeAssociation = Map<GenericObject, Node>;
 
-    constructor(entities: GenericObject[]) {
-        this._entities = entities;
+export default class Builder {
+    private _folder: Folder;
+
+    constructor(entities: Folder) {
+        this._folder = entities;
     }
 
     getGraph(): Graph {
         const graph = new Graph();
-        const graphNodes = new Map<GenericObject, Node>();
-        this._getClasses().forEach(cls => {
-            const graphClass = this._createClassGraphNode(cls);
-            graph.addNode(graphClass);
-            graphNodes.set(cls, graphClass);
-        });
-        this._getInterfaces().forEach(ifc => {
-            const graphIfc = this._createInterfaceGraphNode(ifc);
-            graph.addNode(graphIfc);
-            graphNodes.set(ifc, graphIfc);
-        });
-        this._getEnums().forEach(enm => {
-            const graphIfc = this._createEnumGraphNode(enm);
-            graph.addNode(graphIfc);
-            graphNodes.set(enm, graphIfc);
-        });
-        this._getFunctions().forEach(func => {
-            const graphType = this._createFunctionGraphNode(func);
-            graph.addNote(graphType);
-            graphNodes.set(func, graphType);
-        });
-        this._getTypes().forEach(type => {
-            const graphType = this._createTypeGraphNode(type);
-            graph.addNote(graphType);
-            graphNodes.set(type, graphType);
-        });
+        const graphNodes = this._createGraphNodes(this._folder.getFolderData(), graph);
 
-        this._entities.forEach(entity => {
+        this._getGenericObjects(this._folder.getFolderData()).forEach(entity => {
             entity.getUsages().forEach(usage => {
                 const entityGraphNode = graphNodes.get(entity);
                 const usageGraphNode = graphNodes.get(usage);
@@ -165,6 +144,50 @@ export default class Builder {
         return new NoteNode(`${func.getName()} = function(${parameters})${typeParameters}: ${func.getType()}`);
     }
 
+    private _createGraphNodes(folder: IFolder, graph: Graph): GraphNodeAssociation {
+        const associations: GraphNodeAssociation = this._createGroupGraphNodes(folder.objects, graph);
+
+        folder.folders.forEach(subfolder => {
+            const subgraph = new Graph();
+            this._mergeAssociations(associations, this._createGraphNodes(subfolder, subgraph));
+            graph.addGroup(subfolder.name, subgraph);
+        });
+
+        return associations;
+    }
+
+    private _createGroupGraphNodes(objects: GenericObject[], graph: Graph): GraphNodeAssociation {
+        const graphNodes = new Map<GenericObject, Node>();
+
+        this._getClasses(objects).forEach(cls => {
+            const graphClass = this._createClassGraphNode(cls);
+            graph.addNode(graphClass);
+            graphNodes.set(cls, graphClass);
+        });
+        this._getInterfaces(objects).forEach(ifc => {
+            const graphIfc = this._createInterfaceGraphNode(ifc);
+            graph.addNode(graphIfc);
+            graphNodes.set(ifc, graphIfc);
+        });
+        this._getEnums(objects).forEach(enm => {
+            const graphIfc = this._createEnumGraphNode(enm);
+            graph.addNode(graphIfc);
+            graphNodes.set(enm, graphIfc);
+        });
+        this._getFunctions(objects).forEach(func => {
+            const graphType = this._createFunctionGraphNode(func);
+            graph.addNote(graphType);
+            graphNodes.set(func, graphType);
+        });
+        this._getTypes(objects).forEach(type => {
+            const graphType = this._createTypeGraphNode(type);
+            graph.addNote(graphType);
+            graphNodes.set(type, graphType);
+        });
+
+        return graphNodes;
+    }
+
     private _createInterfaceGraphNode(ifc: Interface): ClassNode {
         const node = new ClassNode(ifc.getName(), ifc.getStereotype());
 
@@ -195,23 +218,43 @@ export default class Builder {
         return new NoteNode(`${type.getName()} = ${type.getValue()}`);
     }
 
-    private _getClasses(): Class[] {
-        return this._entities.filter((entity: GenericObject): entity is Class => entity instanceof Class);
+    private _getClasses(objects: GenericObject[]): Class[] {
+        return objects.filter((entity: GenericObject): entity is Class => entity instanceof Class);
     }
 
-    private _getEnums(): Enum[] {
-        return this._entities.filter((entity: GenericObject): entity is Enum => entity instanceof Enum);
+    private _getEnums(objects: GenericObject[]): Enum[] {
+        return objects.filter((entity: GenericObject): entity is Enum => entity instanceof Enum);
     }
 
-    private _getFunctions(): FunctionDef[] {
-        return this._entities.filter((entity: GenericObject): entity is FunctionDef => entity instanceof FunctionDef);
+    private _getFunctions(objects: GenericObject[]): FunctionDef[] {
+        return objects.filter((entity: GenericObject): entity is FunctionDef => entity instanceof FunctionDef);
     }
 
-    private _getInterfaces(): Interface[] {
-        return this._entities.filter((entity: GenericObject): entity is Interface => entity instanceof Interface);
+    private _getGenericObjects(folder: IFolder): GenericObject[] {
+        const objects = folder.objects;
+
+        folder.folders.forEach(subfolder => {
+            objects.splice(objects.length, 0, ...this._getGenericObjects(subfolder));
+        });
+
+        return objects;
     }
 
-    private _getTypes(): TypeAlias[] {
-        return this._entities.filter((entity: GenericObject): entity is TypeAlias => entity instanceof TypeAlias);
+    private _getInterfaces(objects: GenericObject[]): Interface[] {
+        return objects.filter((entity: GenericObject): entity is Interface => entity instanceof Interface);
+    }
+
+    private _getTypes(objects: GenericObject[]): TypeAlias[] {
+        return objects.filter((entity: GenericObject): entity is TypeAlias => entity instanceof TypeAlias);
+    }
+
+    private _mergeAssociations(destination: GraphNodeAssociation, newAssociation: GraphNodeAssociation): void {
+        for (const [genericObject, node] of newAssociation) {
+            if (destination.has(genericObject)) {
+                throw new Error('Association already exists!');
+            }
+
+            destination.set(genericObject, node);
+        }
     }
 }

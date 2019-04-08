@@ -32,6 +32,7 @@ import Enum from './Enum';
 import FileDependency from './FileDependency';
 import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
+import Folder from './Folder';
 import Function from './Function';
 import GenericObject from './GenericObject';
 import GenericObjectDeclaration from './GenericObjectDeclaration';
@@ -68,7 +69,7 @@ export default class Builder {
         this._files = [];
     }
 
-    async parse(): Promise<GenericObject[]> {
+    async parse(): Promise<Folder> {
         const sourceFileList = await this._getFileList(this._directory);
         this._files = await new Parser(sourceFileList).getFiles();
         const tsFileList = new FileDependency();
@@ -100,7 +101,7 @@ export default class Builder {
             }
         }
 
-        return this._entityStore.getAllEntities();
+        return this._entityStore.getEntitiesInFolders();
     }
 
     private _addAttributes(
@@ -263,7 +264,7 @@ export default class Builder {
                     if (!builtObject) {
                         throw new Error('Default export not found!');
                     }
-                    this._entityStore.put(fileName, defaultImport, builtObject);
+                    this._entityStore.putLink(fileName, defaultImport, builtObject);
                 }
             }
 
@@ -277,7 +278,7 @@ export default class Builder {
                 if (!builtObject) {
                     throw new Error('Exported symbol not found!');
                 }
-                this._entityStore.put(fileName, importName, builtObject);
+                this._entityStore.putLink(fileName, importName, builtObject);
             });
         });
 
