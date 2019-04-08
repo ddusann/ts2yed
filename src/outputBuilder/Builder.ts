@@ -148,9 +148,13 @@ export default class Builder {
         const associations: GraphNodeAssociation = this._createGroupGraphNodes(folder.objects, graph);
 
         folder.folders.forEach(subfolder => {
-            const subgraph = new Graph();
-            this._mergeAssociations(associations, this._createGraphNodes(subfolder, subgraph));
-            graph.addGroup(subfolder.name, subgraph);
+            if (subfolder.objects.length + subfolder.folders.length > 1) {
+                const subgraph = new Graph();
+                this._mergeAssociations(associations, this._createGraphNodes(subfolder, subgraph));
+                graph.addGroup(subfolder.name, subgraph);
+            } else {
+                this._mergeAssociations(associations, this._createGraphNodes(subfolder, graph));
+            }
         });
 
         return associations;
