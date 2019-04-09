@@ -82,6 +82,8 @@ export default abstract class GenericObject {
     }
 
     getUsages(): GenericObject[] {
-        return this._usages;
+        return this._usages.filter(usage => {
+            return !this._extensions.includes(usage) && !this._implementations.includes(usage);
+        });
     }
 }
