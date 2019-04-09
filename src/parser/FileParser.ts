@@ -41,8 +41,10 @@ import Parameter from './Parameter';
 import ParsedFile from './ParsedFile';
 import ReferenceType from './types/ReferenceType';
 import Setter from './Setter';
+import Type from './types/Type';
 import TypeDefinition from './TypeDefinition';
 import TypeParser from './types/TypeParser';
+import _ from 'lodash';
 import ts from 'typescript';
 
 export default abstract class FileParser {
@@ -80,6 +82,31 @@ export default abstract class FileParser {
         return file;
     }
 
+    private static _findReferenceTypes(obj: any): ReferenceType[] {
+        const references: ReferenceType[] = [];
+
+        if (Array.isArray(obj)) {
+            references.splice(
+                references.length,
+                0,
+                ..._.flatten(obj.map(item => FileParser._findReferenceTypes(item)))
+            );
+        } else if (typeof obj === 'object') {
+            for (const propertyName in obj) {
+                if (!TypeParser.isTypeNode(obj[propertyName])) {
+                    references.splice(references.length, 0, ...FileParser._findReferenceTypes(obj[propertyName]));
+                } else {
+                    const type = TypeParser.parse(obj[propertyName]);
+                    references.splice(references.length, 0, ...type.getReferenceTypes() as ReferenceType[]);
+                }
+            }
+        } else {
+            return [];
+        }
+
+        return Type.makeReferenceTypeUnique(references) as ReferenceType[];
+    }
+
     private static _parseClass(node: any): Class {
         const className = node.name.text;
         const typeParameters = this._parseTypeParameters(node);
@@ -89,8 +116,9 @@ export default abstract class FileParser {
         const extensions = FileParser._parseHeritage(node, ts.SyntaxKind.ExtendsKeyword);
         const implementations = FileParser._parseHeritage(node, ts.SyntaxKind.ImplementsKeyword);
         const modifiers = FileParser._parseModifiers(node);
+        const allReferences = FileParser._findReferenceTypes(node);
 
-        return new Class(className, members, modifiers, extensions, implementations, typeParameters);
+        return new Class(className, members, modifiers, allReferences, extensions, implementations, typeParameters);
     }
 
     private static _parseEnum(node: any): Enum {

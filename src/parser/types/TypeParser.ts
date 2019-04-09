@@ -48,6 +48,30 @@ import VoidType from './VoidType';
 import ts from 'typescript';
 
 export default abstract class TypeParser {
+    static isTypeNode(node: any): boolean {
+        return node && node.kind && [
+            ts.SyntaxKind.NumberKeyword,
+            ts.SyntaxKind.StringKeyword,
+            ts.SyntaxKind.BooleanKeyword,
+            ts.SyntaxKind.ArrayType,
+            ts.SyntaxKind.TypeLiteral,
+            ts.SyntaxKind.FunctionType,
+            ts.SyntaxKind.TypeReference,
+            ts.SyntaxKind.UnionType,
+            ts.SyntaxKind.IntersectionType,
+            ts.SyntaxKind.ConditionalType,
+            ts.SyntaxKind.VoidKeyword,
+            ts.SyntaxKind.NullKeyword,
+            ts.SyntaxKind.UndefinedKeyword,
+            ts.SyntaxKind.TypeParameter,
+            ts.SyntaxKind.ParenthesizedType,
+            ts.SyntaxKind.TypeQuery,
+            ts.SyntaxKind.LiteralType,
+            ts.SyntaxKind.AnyKeyword,
+            ts.SyntaxKind.NewExpression
+        ].includes(node.kind);
+    }
+
     static parse(node: any): Type {
         switch (node.kind) {
             case ts.SyntaxKind.NumberKeyword: return new NumberType();
@@ -82,6 +106,10 @@ export default abstract class TypeParser {
             );
             case ts.SyntaxKind.LiteralType: return new StringLiteralType(node.literal.text);
             case ts.SyntaxKind.AnyKeyword: return new AnyType();
+            case ts.SyntaxKind.NewExpression: return new ReferenceType(
+                node.expression.text,
+                TypeParser._parseTypeParameters(node)
+            );
             default: throw new Error('Unknown type!');
         }
     }

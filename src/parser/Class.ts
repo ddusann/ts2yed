@@ -32,10 +32,12 @@ import ModifierType from './IModifier';
 import ReferenceType from './types/ReferenceType';
 import Setter from './Setter';
 import Type from './types/Type';
+import _ from 'lodash';
 
 export default class Class {
     private _extensions: ReferenceType[];
     private _implementations: ReferenceType[];
+    private _indirectUsages: ReferenceType[];
     private _members: Member[];
     private _modifiers: ModifierType[];
     private _name: string;
@@ -45,6 +47,7 @@ export default class Class {
         name: string,
         members: Member[],
         modifiers: ModifierType[],
+        indirectUsages: ReferenceType[],
         extensions: ReferenceType[],
         implementations: ReferenceType[],
         typeParameters: ReferenceType[]
@@ -52,6 +55,7 @@ export default class Class {
         this._name = name;
         this._members = members;
         this._modifiers = modifiers;
+        this._indirectUsages = indirectUsages;
         this._extensions = extensions;
         this._implementations = implementations;
         this._typeParameters = typeParameters;
@@ -95,7 +99,7 @@ export default class Class {
 
     getUsages(): ReferenceType[] {
         return Type.makeReferenceTypeUnique(
-            this._members.map(member => member.getReferenceTypes()).reduce((acc, types) => acc.concat(types), [])
+            _.flatten(this._members.map(member => member.getReferenceTypes())).concat(this._indirectUsages)
         ) as ReferenceType[];
     }
 
