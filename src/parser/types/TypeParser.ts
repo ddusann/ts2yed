@@ -48,6 +48,7 @@ import VoidType from './VoidType';
 import ts from 'typescript';
 import AnyObjectType from './AnyObjectType';
 import TupleType from './TupleType';
+import OptionalType from './OptionalType';
 
 export default abstract class TypeParser {
     static isExpressionNode(node: any): boolean {
@@ -123,6 +124,7 @@ export default abstract class TypeParser {
             case ts.SyntaxKind.CallExpression: return TypeParser._parseCallExpression(node);
             case ts.SyntaxKind.ObjectKeyword: return new AnyObjectType();
             case ts.SyntaxKind.TupleType: return TypeParser._parseTuple(node);
+            case ts.SyntaxKind.OptionalType: return new OptionalType(TypeParser.parse(node.type));
             default: throw new Error('Unknown type!');
         }
     }

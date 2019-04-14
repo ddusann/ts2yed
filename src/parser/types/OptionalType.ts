@@ -23,52 +23,26 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION,
-    NOT_DEFINED,
-    NULL,
-    UNDEFINED,
-    PARENTHESIS,
-    TYPEOF,
-    IS,
-    STRING_LITERAL,
-    ANY,
-    ANY_OBJECT,
-    TUPLE,
-    OPTIONAL
-}
+import Type, { IReplacement, TypeCategory } from './Type';
 
-export interface IReplacement {
-    from: string;
-    to: string;
-}
+export default class OptionalType extends Type {
+    private _type: Type;
 
-export default abstract class Type {
-    static makeReferenceTypeUnique(references: Type[], hideTypeParameters: boolean = false) {
-        const usedTypes: string[] = [];
+    constructor(type: Type) {
+        super();
 
-        return references.filter(reference => {
-            const referenceTypeName = reference.getTypeName([], hideTypeParameters);
-            if (usedTypes.includes(referenceTypeName)) {
-                return false;
-            }
-
-            usedTypes.push(referenceTypeName);
-            return true;
-        });
+        this._type = type;
     }
 
-    abstract getReferenceTypes(): Type[];
-    abstract getType(): TypeCategory;
-    abstract getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string;
+    getReferenceTypes(): Type[] {
+        return this._type.getReferenceTypes();
+    }
+
+    getType(): TypeCategory {
+        return TypeCategory.OPTIONAL;
+    }
+
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        return this._type.getTypeName(replacements, hideTypeParameters) + '?';
+    }
 }
