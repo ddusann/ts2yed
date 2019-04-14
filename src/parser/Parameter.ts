@@ -23,13 +23,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import Type, { TypeCategory } from './types/Type';
+import Type from './types/Type';
+import AnyType from './types/AnyType';
 
 export default class Parameter {
     private _name: string;
     private _type: Type;
 
-    constructor(name: string, type: Type) {
+    constructor(name: string, type: Type = new AnyType()) {
         this._name = name;
         this._type = type;
     }

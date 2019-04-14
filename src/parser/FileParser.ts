@@ -304,7 +304,10 @@ export default abstract class FileParser {
 
     private static _parseParameters(node: any): Parameter[] {
         return node.parameters.map((parameter: any) => {
-            return new Parameter(parameter.name.text, TypeParser.parse(parameter.type));
+            return new Parameter(
+                parameter.name.text,
+                parameter.type && TypeParser.parse(parameter.type)
+            );
         });
     }
 
