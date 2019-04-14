@@ -23,50 +23,18 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION,
-    NOT_DEFINED,
-    NULL,
-    UNDEFINED,
-    PARENTHESIS,
-    TYPEOF,
-    IS,
-    STRING_LITERAL,
-    ANY,
-    ANY_OBJECT
-}
+import Type, { IReplacement, TypeCategory } from './Type';
 
-export interface IReplacement {
-    from: string;
-    to: string;
-}
-
-export default abstract class Type {
-    static makeReferenceTypeUnique(references: Type[], hideTypeParameters: boolean = false) {
-        const usedTypes: string[] = [];
-
-        return references.filter(reference => {
-            const referenceTypeName = reference.getTypeName([], hideTypeParameters);
-            if (usedTypes.includes(referenceTypeName)) {
-                return false;
-            }
-
-            usedTypes.push(referenceTypeName);
-            return true;
-        });
+export default class AnyObjectType extends Type {
+    getReferenceTypes(): Type[] {
+        return [];
     }
 
-    abstract getReferenceTypes(): Type[];
-    abstract getType(): TypeCategory;
-    abstract getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string;
+    getType(): TypeCategory {
+        return TypeCategory.ANY_OBJECT;
+    }
+
+    getTypeName(): string {
+        return 'object';
+    }
 }

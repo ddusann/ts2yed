@@ -46,6 +46,7 @@ import UndefinedType from './UndefinedType';
 import UnionType from './UnionType';
 import VoidType from './VoidType';
 import ts from 'typescript';
+import AnyObjectType from './AnyObjectType';
 
 export default abstract class TypeParser {
     static isExpressionNode(node: any): boolean {
@@ -119,6 +120,7 @@ export default abstract class TypeParser {
                 TypeParser._parseTypeParameters(node)
             );
             case ts.SyntaxKind.CallExpression: return TypeParser._parseCallExpression(node);
+            case ts.SyntaxKind.ObjectKeyword: return new AnyObjectType();
             default: throw new Error('Unknown type!');
         }
     }
