@@ -84,21 +84,32 @@ export default abstract class FileParser {
 
     private static _findReferenceTypes(obj: any): ReferenceType[] {
         const references: ReferenceType[] = [];
+        const findNestedReferenceTypes = (item: any): ReferenceType[] => {
+            if (!TypeParser.isTypeNode(item)) {
+                return FileParser._findReferenceTypes(item);
+            } else {
+                const rfcs: ReferenceType[] = [];
+                const type = TypeParser.parse(item);
+                rfcs.splice(rfcs.length, 0, ...type.getReferenceTypes() as ReferenceType[]);
+
+                if (TypeParser.isExpressionNode(item)) {
+                    rfcs.splice(rfcs.length, 0, ...FileParser._findReferenceTypes(item));
+                }
+                return rfcs;
+            }
+        };
 
         if (Array.isArray(obj)) {
-            references.splice(
-                references.length,
-                0,
-                ..._.flatten(obj.map(item => FileParser._findReferenceTypes(item)))
-            );
+            references.splice(references.length, 0, ..._.flatten(obj.map(item => {
+                return findNestedReferenceTypes(item);
+            })));
         } else if (typeof obj === 'object') {
             for (const propertyName in obj) {
-                if (!TypeParser.isTypeNode(obj[propertyName])) {
-                    references.splice(references.length, 0, ...FileParser._findReferenceTypes(obj[propertyName]));
-                } else {
-                    const type = TypeParser.parse(obj[propertyName]);
-                    references.splice(references.length, 0, ...type.getReferenceTypes() as ReferenceType[]);
+                if (propertyName === 'parent') {
+                    continue;
                 }
+
+                references.splice(references.length, 0, ...findNestedReferenceTypes(obj[propertyName]));
             }
         } else {
             return [];

@@ -48,6 +48,13 @@ import VoidType from './VoidType';
 import ts from 'typescript';
 
 export default abstract class TypeParser {
+    static isExpressionNode(node: any): boolean {
+        return node && node.kind && [
+            ts.SyntaxKind.NewExpression,
+            ts.SyntaxKind.CallExpression
+        ].includes(node.kind);
+    }
+
     static isTypeNode(node: any): boolean {
         return node && node.kind && [
             ts.SyntaxKind.NumberKeyword,
@@ -68,7 +75,8 @@ export default abstract class TypeParser {
             ts.SyntaxKind.TypeQuery,
             ts.SyntaxKind.LiteralType,
             ts.SyntaxKind.AnyKeyword,
-            ts.SyntaxKind.NewExpression
+            ts.SyntaxKind.NewExpression,
+            ts.SyntaxKind.CallExpression
         ].includes(node.kind);
     }
 
@@ -110,6 +118,7 @@ export default abstract class TypeParser {
                 node.expression.text,
                 TypeParser._parseTypeParameters(node)
             );
+            case ts.SyntaxKind.CallExpression: return TypeParser._parseCallExpression(node);
             default: throw new Error('Unknown type!');
         }
     }
@@ -126,6 +135,19 @@ export default abstract class TypeParser {
             const flags = optional ? [ModifierType.OPTIONAL] : [];
             return new Attribute(name, flags, type);
         });
+    }
+
+    private static _parseCallExpression(node: any): ReferenceType {
+        let expression = node.expression;
+        while (expression.kind === ts.SyntaxKind.PropertyAccessExpression
+            || expression.kind === ts.SyntaxKind.NewExpression) {
+            expression = expression.expression;
+        }
+
+        return new ReferenceType(
+            expression.text,
+            TypeParser._parseTypeParameters(expression)
+        );
     }
 
     private static _parseConditionType(node: any): ConditionType {
