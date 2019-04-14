@@ -26,6 +26,7 @@
 import AnyType from './AnyType';
 import ArrayType from './ArrayType';
 import Attribute from '../Attribute';
+import { IKeyName } from '../Member';
 import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
 import FunctionType from './FunctionType';
@@ -79,7 +80,10 @@ export default abstract class TypeParser {
             ts.SyntaxKind.LiteralType,
             ts.SyntaxKind.AnyKeyword,
             ts.SyntaxKind.NewExpression,
-            ts.SyntaxKind.CallExpression
+            ts.SyntaxKind.CallExpression,
+            ts.SyntaxKind.ObjectKeyword,
+            ts.SyntaxKind.TupleType,
+            ts.SyntaxKind.OptionalType
         ].includes(node.kind);
     }
 
@@ -135,7 +139,16 @@ export default abstract class TypeParser {
 
     private static _parseAttributes(node: any): Attribute[] {
         return node.members.map((member: any) => {
-            const name = member.name.text;
+            let name: string|IKeyName;
+            if (member.kind === ts.SyntaxKind.IndexSignature) {
+                name = {
+                    name: member.parameters[0].name.text,
+                    type: TypeParser.parse(member.parameters[0].type)
+                };
+            } else {
+                name = member.name.text;
+            }
+
             const optional = !!member.questionToken;
             const type = TypeParser.parse(member.type);
             const flags = optional ? [ModifierType.OPTIONAL] : [];
