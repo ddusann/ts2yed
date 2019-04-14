@@ -400,7 +400,9 @@ export default class Builder {
                 }
 
                 const dirNames = files.filter(file => file.isDirectory()).map(file => path.join(directory, file.name));
-                const fileNames = files.filter(file => file.isFile()).map(file => path.join(directory, file.name));
+                const fileNames = files
+                    .filter(file => file.isFile() && path.extname(file.name) === '.ts')
+                    .map(file => path.join(directory, file.name));
                 const subFileNamePromises = dirNames.map(subDirectory => this._getFileList(subDirectory));
 
                 Promise.all(subFileNamePromises).then(subFileNamesByDir => {
