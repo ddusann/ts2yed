@@ -46,6 +46,7 @@ import TypeDefinition from './TypeDefinition';
 import TypeParser from './types/TypeParser';
 import _ from 'lodash';
 import ts from 'typescript';
+import AnyType from './types/AnyType';
 
 export default abstract class FileParser {
     static parse(node: any): ParsedFile {
@@ -56,27 +57,7 @@ export default abstract class FileParser {
 
         node.statements.forEach((statement: any) => {
             this._parseExport(statement, file);
-
-            switch (statement.kind) {
-                case ts.SyntaxKind.ImportDeclaration:
-                    file.addImport(FileParser._parseImport(statement));
-                    break;
-                case ts.SyntaxKind.TypeAliasDeclaration:
-                    file.addType(FileParser._parseTypeDefinition(statement));
-                    break;
-                case ts.SyntaxKind.EnumDeclaration:
-                    file.addEnum(FileParser._parseEnum(statement));
-                    break;
-                case ts.SyntaxKind.InterfaceDeclaration:
-                    file.addInterface(FileParser._parseInterface(statement));
-                    break;
-                case ts.SyntaxKind.ClassDeclaration:
-                    file.addClass(FileParser._parseClass(statement));
-                    break;
-                case ts.SyntaxKind.FunctionDeclaration:
-                    file.addFunction(FileParser._parseFunction(statement));
-                    break;
-            }
+            this._parseStatement(statement, file);
         });
 
         return file;
@@ -118,6 +99,14 @@ export default abstract class FileParser {
         return Type.makeReferenceTypeUnique(references) as ReferenceType[];
     }
 
+    private static _parseArrowFunction(node: any, name?: string): FunctionDefinition {
+        const parameters = FileParser._parseParameters(node);
+        const typeParameters = FileParser._parseTypeParameters(node);
+        const type = node.type ? TypeParser.parse(node.type) : new AnyType();
+
+        return new FunctionDefinition(parameters, type, typeParameters, name);
+    }
+
     private static _parseClass(node: any): Class {
         const className = node.name.text;
         const typeParameters = this._parseTypeParameters(node);
@@ -130,6 +119,20 @@ export default abstract class FileParser {
         const allReferences = FileParser._findReferenceTypes(node);
 
         return new Class(className, members, modifiers, allReferences, extensions, implementations, typeParameters);
+    }
+
+    private static _parseDeclarations(declarationList: any, file: ParsedFile): void {
+        declarationList.declarations.forEach((declaration: any) => {
+            const name = declaration.name && declaration.name.text;
+            if (declaration.initializer) {
+                switch (declaration.initializer.kind) {
+                    case ts.SyntaxKind.ArrowFunction:
+                        file.addFunction(FileParser._parseArrowFunction(declaration.initializer, name));
+                        break;
+                    default: throw Error('Unknown declaration!');
+                }
+            }
+        });
     }
 
     private static _parseEnum(node: any): Enum {
@@ -309,6 +312,32 @@ export default abstract class FileParser {
                 parameter.type && TypeParser.parse(parameter.type)
             );
         });
+    }
+
+    private static _parseStatement(statement: any, file: ParsedFile): void {
+        switch (statement.kind) {
+            case ts.SyntaxKind.ImportDeclaration:
+                file.addImport(FileParser._parseImport(statement));
+                break;
+            case ts.SyntaxKind.TypeAliasDeclaration:
+                file.addType(FileParser._parseTypeDefinition(statement));
+                break;
+            case ts.SyntaxKind.EnumDeclaration:
+                file.addEnum(FileParser._parseEnum(statement));
+                break;
+            case ts.SyntaxKind.InterfaceDeclaration:
+                file.addInterface(FileParser._parseInterface(statement));
+                break;
+            case ts.SyntaxKind.ClassDeclaration:
+                file.addClass(FileParser._parseClass(statement));
+                break;
+            case ts.SyntaxKind.FunctionDeclaration:
+                file.addFunction(FileParser._parseFunction(statement));
+                break;
+            case ts.SyntaxKind.VariableStatement:
+                FileParser._parseDeclarations(statement.declarationList, file);
+                break;
+        }
     }
 
     private static _parseTypeDefinition(node: any): TypeDefinition {
