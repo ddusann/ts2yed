@@ -47,6 +47,7 @@ import UnionType from './UnionType';
 import VoidType from './VoidType';
 import ts from 'typescript';
 import AnyObjectType from './AnyObjectType';
+import TupleType from './TupleType';
 
 export default abstract class TypeParser {
     static isExpressionNode(node: any): boolean {
@@ -121,6 +122,7 @@ export default abstract class TypeParser {
             );
             case ts.SyntaxKind.CallExpression: return TypeParser._parseCallExpression(node);
             case ts.SyntaxKind.ObjectKeyword: return new AnyObjectType();
+            case ts.SyntaxKind.TupleType: return TypeParser._parseTuple(node);
             default: throw new Error('Unknown type!');
         }
     }
@@ -187,6 +189,13 @@ export default abstract class TypeParser {
         return node.parameters.map((parameter: any) => {
             return new Parameter(parameter.name.text, TypeParser.parse(parameter.type));
         });
+    }
+
+    private static _parseTuple(node: any): TupleType {
+        const types = Array.isArray(node.elementTypes)
+            ? node.elementTypes.map((type: any) => TypeParser.parse(type))
+            : [];
+        return new TupleType(types);
     }
 
     private static _parseTypeParameters(node: any): Type[] {

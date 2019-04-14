@@ -23,51 +23,31 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum TypeCategory {
-    NUMBER,
-    STRING,
-    BOOLEAN,
-    ARRAY,
-    OBJECT,
-    FUNCTION,
-    REFERENCE,
-    VOID,
-    UNION,
-    INTERSECTION,
-    CONDITION,
-    NOT_DEFINED,
-    NULL,
-    UNDEFINED,
-    PARENTHESIS,
-    TYPEOF,
-    IS,
-    STRING_LITERAL,
-    ANY,
-    ANY_OBJECT,
-    TUPLE
-}
+import _ from 'lodash';
+import Type, { IReplacement, TypeCategory } from './Type';
 
-export interface IReplacement {
-    from: string;
-    to: string;
-}
+export default class TupleType extends Type {
+    private _types: Type[];
 
-export default abstract class Type {
-    static makeReferenceTypeUnique(references: Type[], hideTypeParameters: boolean = false) {
-        const usedTypes: string[] = [];
+    constructor(types: Type[]) {
+        super();
 
-        return references.filter(reference => {
-            const referenceTypeName = reference.getTypeName([], hideTypeParameters);
-            if (usedTypes.includes(referenceTypeName)) {
-                return false;
-            }
-
-            usedTypes.push(referenceTypeName);
-            return true;
-        });
+        this._types = types;
     }
 
-    abstract getReferenceTypes(): Type[];
-    abstract getType(): TypeCategory;
-    abstract getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string;
+    getReferenceTypes(): Type[] {
+        return Type.makeReferenceTypeUnique(_.flatten(
+            this._types.map(type => type.getReferenceTypes())
+        ));
+    }
+
+    getType(): TypeCategory {
+        return TypeCategory.TUPLE;
+    }
+
+    getTypeName(replacements: IReplacement[], hideTypeParameters: boolean): string {
+        const types = this._types.map(type => type.getTypeName(replacements, hideTypeParameters));
+
+        return `[${types.join(', ')}]`;
+    }
 }
