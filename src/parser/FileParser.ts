@@ -47,6 +47,8 @@ import TypeParser from './types/TypeParser';
 import _ from 'lodash';
 import ts from 'typescript';
 import AnyType from './types/AnyType';
+import NumberType from './types/NumberType';
+import StringType from './types/StringType';
 
 export default abstract class FileParser {
     static parse(node: any): ParsedFile {
@@ -128,6 +130,15 @@ export default abstract class FileParser {
                 switch (declaration.initializer.kind) {
                     case ts.SyntaxKind.ArrowFunction:
                         file.addFunction(FileParser._parseArrowFunction(declaration.initializer, name));
+                        break;
+                    case ts.SyntaxKind.Identifier:
+                        file.addType(FileParser._parseTypeDefinition(declaration));
+                        break;
+                    case ts.SyntaxKind.NumericLiteral:
+                        file.addType(new TypeDefinition(name, new NumberType(), []));
+                        break;
+                    case ts.SyntaxKind.StringLiteral:
+                        file.addType(new TypeDefinition(name, new StringType(), []));
                         break;
                     default: throw Error('Unknown declaration!');
                 }
