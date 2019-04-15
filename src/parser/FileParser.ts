@@ -163,7 +163,11 @@ export default abstract class FileParser {
         let names: any[] = [];
 
         if (node.kind === ts.SyntaxKind.ExportAssignment) {
-            names = [node.expression.text];
+            if (node.expression.kind === ts.SyntaxKind.AsExpression) {
+                names = [node.expression.expression.text];
+            } else {
+                names = [node.expression.text];
+            }
         } else {
             node.modifiers.find((modifier: any) => {
                 if (node.declarationList && Array.isArray(node.declarationList.declarations)) {
