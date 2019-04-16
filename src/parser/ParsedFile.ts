@@ -29,6 +29,7 @@ import Export from './Export';
 import FunctionDefinition from './Function';
 import Import from './Import';
 import Interface from './Interface';
+import Type from './types/Type';
 import TypeDefinition from './TypeDefinition';
 
 export type FileEntity = Class|Enum|FunctionDefinition|Import|Interface|TypeDefinition;
@@ -36,7 +37,7 @@ export type FileEntity = Class|Enum|FunctionDefinition|Import|Interface|TypeDefi
 export default class ParsedFile {
     private _aliases: Map<string, string>;
     private _classes: Class[];
-    private _defaultExport?: Export;
+    private _defaultExport?: Type;
     private _enums: Enum[];
     private _exports: Export[];
     private _functions: FunctionDefinition[];
@@ -62,7 +63,7 @@ export default class ParsedFile {
         this._mappedObjects.set(classStatement.getName(), classStatement);
     }
 
-    addDefaultExport(defaultExport: Export): void {
+    addDefaultExport(defaultExport: Type): void {
         this._defaultExport = defaultExport;
     }
 
@@ -106,8 +107,8 @@ export default class ParsedFile {
         return this._classes;
     }
 
-    getDefaultExport(): string|undefined {
-        return this._defaultExport ? this._defaultExport.getName() : undefined;
+    getDefaultExport(): Type|undefined {
+        return this._defaultExport ? this._defaultExport : undefined;
     }
 
     getDependencyFiles(): string[] {
@@ -119,12 +120,7 @@ export default class ParsedFile {
     }
 
     getExportedSymbols(): string[] {
-        const exports = Array.from(this._exports);
-        if (this._defaultExport) {
-            exports.push(this._defaultExport);
-        }
-
-        return exports.map(exp => exp.getName());
+        return Array.from(this._exports).map(exp => exp.getName());
     }
 
     getImports(): Import[] {

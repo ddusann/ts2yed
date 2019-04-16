@@ -259,11 +259,13 @@ export default class Builder {
             if (defaultImport) {
                 const importedParsedFileDefaultExport = importedParsedFile.getDefaultExport();
                 if (importedParsedFileDefaultExport) {
-                    replacements.push({ from: defaultImport, to: importedParsedFileDefaultExport });
-                    const builtObject = this._entityStore.get(importFilePath, importedParsedFileDefaultExport);
+                    const importedDefaultExportType = importedParsedFileDefaultExport.getReferenceTypes()[0];
+                    const importedDefaultExportTypeName = importedDefaultExportType.getTypeName(replacements, true);
+                    const builtObject = this._entityStore.get(importFilePath, importedDefaultExportTypeName);
                     if (!builtObject) {
                         throw new Error('Default export not found!');
                     }
+                    replacements.push({ from: defaultImport, to: importedDefaultExportTypeName });
                     this._entityStore.putLink(fileName, defaultImport, builtObject);
                 }
             }

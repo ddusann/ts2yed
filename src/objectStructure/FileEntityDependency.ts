@@ -40,6 +40,14 @@ export default class FileEntityDependency {
 
         const checkedSymbols: string[] = [];
         const fileExports = parsedFile.getExportedSymbols();
+        const fileDeafultExportType = parsedFile.getDefaultExport();
+        if (fileDeafultExportType) {
+            fileExports.splice(
+                fileExports.length,
+                0,
+                ...fileDeafultExportType.getReferenceTypes().map(ref => ref.getTypeName([], false))
+            );
+        }
         const symbolsToCheck = Array.from(fileExports);
         while (symbolsToCheck.length > 0) {
             const fileExportSymbol = symbolsToCheck.pop()!;

@@ -58,8 +58,8 @@ export default abstract class FileParser {
         }
 
         node.statements.forEach((statement: any) => {
-            this._parseExport(statement, file);
             this._parseStatement(statement, file);
+            this._parseExport(statement, file);
         });
 
         return file;
@@ -176,11 +176,13 @@ export default abstract class FileParser {
 
         let isDefault = !!(node.kind === ts.SyntaxKind.ExportAssignment);
         let isExport = !!(node.kind === ts.SyntaxKind.ExportAssignment);
+        let isRetyped = false;
         let names: any[] = [];
 
         if (node.kind === ts.SyntaxKind.ExportAssignment) {
             if (node.expression.kind === ts.SyntaxKind.AsExpression) {
                 names = [node.expression.expression.text];
+                isRetyped = true;
             } else {
                 names = [node.expression.text];
             }
@@ -205,7 +207,12 @@ export default abstract class FileParser {
                 if (names.length === 0) {
                     throw new Error('Unknown default export');
                 }
-                file.addDefaultExport(new Export(names[0]));
+                if (isRetyped) {
+                    const type = TypeParser.parse(node.expression.type);
+                    file.addDefaultExport(type);
+                } else {
+                    file.addDefaultExport(new ReferenceType(names[0], []));
+                }
             } else {
                 names.forEach((name: string) => {
                     file.addExport(new Export(name));
