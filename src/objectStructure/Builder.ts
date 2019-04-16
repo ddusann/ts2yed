@@ -364,6 +364,7 @@ export default class Builder {
         const name = this._getNameWithTypeParameters(parsedType);
         const newTypeAlias = new TypeAlias(name, typeAlias);
 
+        this._addUsages(parsedType.getUsages(), newTypeAlias, fileName);
         this._entityStore.put(fileName, parsedType.getName(), newTypeAlias);
     }
 
