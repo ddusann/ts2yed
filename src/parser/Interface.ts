@@ -28,6 +28,7 @@ import Member from './Member';
 import Method from './Method';
 import ReferenceType from './types/ReferenceType';
 import Type from './types/Type';
+import _ from 'lodash';
 
 export default class Interface {
     private _extensions: ReferenceType[];
@@ -40,6 +41,12 @@ export default class Interface {
         this._members = members;
         this._extensions = extensions;
         this._typeParameters = typeParameters;
+    }
+
+    getAllReferences(): ReferenceType[] {
+        return Type.makeReferenceTypeUnique(
+            _.flatten(this.getUsages().concat(this.getExtensions()))
+        ) as ReferenceType[];
     }
 
     getAttributes(): Attribute[] {

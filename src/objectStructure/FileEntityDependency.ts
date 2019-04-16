@@ -48,7 +48,7 @@ export default class FileEntityDependency {
             const fileEntity = parsedFile.getEntity(fileExportSymbol);
 
             if (this._mayContainSubtypes(fileEntity)) {
-                fileEntity.getUsages().forEach(entityReferences => {
+                fileEntity.getAllReferences().forEach(entityReferences => {
                     entityReferences.getReferenceTypes().forEach(entityReference => {
                         const entitySymbol = entityReference.getTypeName([], true);
                         if (entitySymbol === fileExportSymbol) {

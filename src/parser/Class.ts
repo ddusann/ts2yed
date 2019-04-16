@@ -61,6 +61,12 @@ export default class Class {
         this._typeParameters = typeParameters;
     }
 
+    getAllReferences(): ReferenceType[] {
+        return Type.makeReferenceTypeUnique(
+            _.flatten(this.getUsages().concat(this.getExtensions()).concat(this.getImplementations()))
+        ) as ReferenceType[];
+    }
+
     getAttributes(): Attribute[] {
         return this._members.filter((member: Member): member is Attribute => member instanceof Attribute);
     }

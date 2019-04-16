@@ -37,6 +37,10 @@ export default class TypeDefinition {
         this._typeParameters = typeParameters;
     }
 
+    getAllReferences(): ReferenceType[] {
+        return this.getUsages();
+    }
+
     getName(): string {
         return this._name;
     }
