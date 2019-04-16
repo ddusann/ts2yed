@@ -25,6 +25,7 @@
 
 import Import, { IImport } from './Import';
 
+import AnyType from './types/AnyType';
 import Attribute from './Attribute';
 import Class from './Class';
 import Constructor from './Constructor';
@@ -37,18 +38,17 @@ import Member from './Member';
 import Method from './Method';
 import ModifierType from './IModifier';
 import NotDefinedType from './types/NotDefinedType';
+import NumberType from './types/NumberType';
 import Parameter from './Parameter';
 import ParsedFile from './ParsedFile';
 import ReferenceType from './types/ReferenceType';
 import Setter from './Setter';
+import StringType from './types/StringType';
 import Type from './types/Type';
 import TypeDefinition from './TypeDefinition';
 import TypeParser from './types/TypeParser';
 import _ from 'lodash';
 import ts from 'typescript';
-import AnyType from './types/AnyType';
-import NumberType from './types/NumberType';
-import StringType from './types/StringType';
 
 export default abstract class FileParser {
     static parse(node: any): ParsedFile {
@@ -139,6 +139,22 @@ export default abstract class FileParser {
                         break;
                     case ts.SyntaxKind.StringLiteral:
                         file.addType(new TypeDefinition(name, new StringType(), []));
+                        break;
+                    case ts.SyntaxKind.NewExpression:
+                        let type: Type;
+                        if (declaration.type) {
+                            type = TypeParser.parse(declaration.type);
+                        } else {
+                            let expression = declaration.initializer.expression;
+                            while (expression.expression) {
+                                expression = expression.expression;
+                            }
+                            type = new ReferenceType(
+                                expression.text,
+                                FileParser._parseTypeParameters(declaration.initializer)
+                            );
+                        }
+                        file.addType(new TypeDefinition(name, type, []));
                         break;
                     default: throw Error('Unknown declaration!');
                 }
@@ -360,11 +376,15 @@ export default abstract class FileParser {
     }
 
     private static _parseTypeParameters(node: any): ReferenceType[] {
-        if (!node || !node.typeParameters) {
+        if (!node || (!node.typeParameters && !node.typeArguments)) {
             return [];
         }
 
-        return node.typeParameters.map((param: any) =>
+        const parameters = node.typeParameters
+            ? node.typeParameters
+            : node.typeArguments;
+
+        return parameters.map((param: any) =>
             new ReferenceType(param.name.text, FileParser._parseTypeParameters(param)));
     }
 }
