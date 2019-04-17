@@ -57,12 +57,38 @@ export default class BidirectedForest<NodeType> {
     }
 
     hasNodes(): boolean {
-        return this._noChildNodes.length > 0;
+        return this._allNodes.size > 0;
+    }
+
+    takeCycledChildNode(): NodeType {
+        const allNodes = Array.from(this._allNodes.keys());
+        const childNode = this._allNodes.get(allNodes[0])!;
+
+        childNode.parents.forEach(parent => {
+            const childNodeIndex = parent.leaves.findIndex(leaf => leaf === childNode);
+            parent.leaves.splice(childNodeIndex, 1);
+
+            if (parent.leaves.length === 0) {
+                this._noChildNodes.push(parent);
+            }
+        });
+
+        childNode.leaves.forEach(leaf => {
+            const childNodeIndex = leaf.parents.findIndex(parent => parent === childNode);
+            leaf.parents.splice(childNodeIndex, 1);
+        });
+
+        this._allNodes.delete(childNode.node);
+
+        return childNode.node;
     }
 
     takeNoChildNode(): NodeType|undefined {
         const childNode = this._noChildNodes.pop();
         if (!childNode) {
+            if (this._allNodes.size > 0) {
+                return this.takeCycledChildNode();
+            }
             return undefined;
         }
 
@@ -75,7 +101,24 @@ export default class BidirectedForest<NodeType> {
             }
         });
 
+        this._allNodes.delete(childNode.node);
+
         return childNode.node;
+    }
+
+    toString(): string {
+        const items: string[] = [];
+
+        this._allNodes.forEach(node => {
+            const title = node.node.toString();
+            const parents = node.parents.map(parent => parent.node.toString()).join(', ');
+            const children = node.leaves.map(leaf => leaf.node.toString()).join(', ');
+            items.push(title + '\n    PARENTS: ' + parents + '\n    CHILDREN: ' + children + '\n');
+        });
+
+        const noChildNodes = this._noChildNodes.map(node => node.node.toString()).join(', ');
+
+        return 'NO CHILD NODES: ' + noChildNodes + '\n\n' + items.join('\n');
     }
 
     private _addChild(parent: NodeType, child: NodeType): void {
