@@ -265,7 +265,10 @@ export default class Builder {
                     if (!builtObject) {
                         throw new Error('Default export not found!');
                     }
-                    replacements.push({ from: defaultImport, to: importedDefaultExportTypeName });
+                    replacements.push({
+                        from: defaultImport,
+                        to: importedParsedFileDefaultExport.getTypeName(replacements, false)
+                    });
                     this._entityStore.putLink(fileName, defaultImport, builtObject);
                 }
             }
