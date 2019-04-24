@@ -65,21 +65,22 @@ interface IAlias {
 
 export default class Builder {
     private _aliases: IAlias[];
-    private _path: string;
     private _entityStore: Store;
     private _files: IParsedFile[];
+    private _paths: string[];
 
-    constructor(directory: string) {
+    constructor(paths: string|string[]) {
+        if (!Array.isArray(paths)) {
+            paths = [paths];
+        }
+
         this._entityStore = new Store();
         this._files = [];
         this._aliases = [];
 
-        if (!fs.existsSync(directory)) {
-            this._path = '';
-            return;
-        }
-
-        this._path = path.isAbsolute(directory) ? directory : path.join(process.cwd(), directory);
+        this._paths = paths
+            .filter(userPath => fs.existsSync(userPath))
+            .map(userPath => path.isAbsolute(userPath) ? userPath : path.join(process.cwd(), userPath));
     }
 
     addAlias(alias: string, realPath: string): void {
@@ -96,11 +97,11 @@ export default class Builder {
     }
 
     async parse(): Promise<Folder> {
-        if (this._path === '') {
-            return Promise.reject(new Error('Invalid path!'));
+        if (this._paths.length === 0) {
+            return this._entityStore.getEntitiesInFolders();
         }
 
-        const sourceFileList = await this._getFileList(this._path);
+        const sourceFileList = await this._getFileList(this._paths);
         this._files = await new Parser(sourceFileList).getFiles();
         const tsFileList = new FileDependency();
         this._files.forEach(file => {
@@ -443,30 +444,68 @@ export default class Builder {
         }).filter((usedPath): usedPath is string => usedPath !== undefined);
     }
 
-    private async _getFileList(directory: string): Promise<string[]> {
-        return new Promise((resolve, reject) => {
-            if (fs.statSync(directory).isFile()) {
-                resolve([directory]);
-            }
+    private async _getFileList(paths: string[]): Promise<string[]> {
+        interface IPathIsDir {
+            filePath: string;
+            isDir: boolean;
+        }
 
-            fs.readdir(directory, { withFileTypes: true }, (err, files) => {
+        const isDirPromises = paths.map(filePath => new Promise<IPathIsDir>((resolve, reject) => {
+            fs.stat(filePath, (err, stats) => {
                 if (err) {
-                    reject(new Error(err.message));
+                    reject(err);
                     return;
                 }
 
-                const dirNames = files.filter(file => file.isDirectory()).map(file => path.join(directory, file.name));
-                const fileNames = files
-                    .filter(file => file.isFile() && path.extname(file.name) === '.ts')
-                    .map(file => path.join(directory, file.name));
-                const subFileNamePromises = dirNames.map(subDirectory => this._getFileList(subDirectory));
-
-                Promise.all(subFileNamePromises).then(subFileNamesByDir => {
-                    subFileNamesByDir.forEach(subFileNames => fileNames.splice(fileNames.length, 0, ...subFileNames));
-                }).then(() => {
-                    resolve(fileNames);
+                resolve({
+                    filePath,
+                    isDir: stats.isDirectory()
                 });
             });
+        }));
+
+        const dirFilePathPromises = isDirPromises.map(isDirPromise => {
+            return isDirPromise.then(result => {
+                if (!result.isDir) {
+                    return [result.filePath];
+                }
+
+                return new Promise<string[]>((resolve, reject) => {
+                    fs.readdir(result.filePath, { withFileTypes: true }, (err, files) => {
+                        if (err) {
+                            reject(new Error(err.message));
+                            return;
+                        }
+
+                        const dirNames = files
+                            .filter(file => file.isDirectory())
+                            .map(file => path.join(result.filePath, file.name));
+                        const fileNames = files
+                            .filter(file => file.isFile() && path.extname(file.name) === '.ts')
+                            .map(file => path.join(result.filePath, file.name));
+                        const subFileNamePromises = dirNames.map(subDirectory => this._getFileList([subDirectory]));
+
+                        Promise.all(subFileNamePromises).then(subFileNamesByDir => {
+                            subFileNamesByDir.forEach(subFileNames => { 
+                                return fileNames.splice(fileNames.length, 0, ...subFileNames);
+                            });
+                        }).then(() => {
+                            resolve(fileNames);
+                        });
+                    });
+                });
+            });
+        });
+
+        const uniqFilePaths = new Set<string>();
+        return Promise.all(dirFilePathPromises).then(dirFilePaths => {
+            dirFilePaths.forEach(filePaths => {
+                filePaths.forEach(filePath => {
+                    uniqFilePaths.add(filePath);
+                });
+            });
+        }).then(() => {
+            return Array.from(uniqFilePaths);
         });
     }
 
