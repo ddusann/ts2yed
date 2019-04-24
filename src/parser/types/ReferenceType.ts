@@ -25,6 +25,8 @@
 
 import Type, { IReplacement, TypeCategory } from './Type';
 
+import _ from 'lodash';
+
 export default class ReferenceType extends Type {
     private _name: string;
     private _typeParameters: Type[];
@@ -37,7 +39,13 @@ export default class ReferenceType extends Type {
     }
 
     getReferenceTypes(): Type[] {
-        return [this];
+        const typeParameterreferences = Type.makeReferenceTypeUnique(
+            _.flatten(this._typeParameters
+                .filter(typeParameter => typeParameter.getTypeName([], true) !== this._name)
+                .map(typeParameter => typeParameter.getReferenceTypes())
+            ));
+
+        return [this, ...typeParameterreferences];
     }
 
     getType(): TypeCategory {

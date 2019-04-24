@@ -115,7 +115,7 @@ export default class Builder {
             const fileName = tsFileList.getFile();
             const parsedFile = this._files.find(file => file.fileName === fileName);
             if (!parsedFile) {
-                console.debug(`'${fileName}' was not parsed!`);
+                console.debug(`'${fileName}' was not selected to be parsed!`);
                 continue;
             }
 
@@ -289,7 +289,7 @@ export default class Builder {
             const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [importFileName])[0];
             const importedParsedFileObj = this._files.find(file => file.fileName === importFilePath);
             if (!importedParsedFileObj) {
-                console.debug(`'${importFilePath}' was not parsed!`);
+                console.debug(`'${importFilePath}' was not selected to be parsed!`);
                 return;
             }
 
@@ -486,7 +486,7 @@ export default class Builder {
                         const subFileNamePromises = dirNames.map(subDirectory => this._getFileList([subDirectory]));
 
                         Promise.all(subFileNamePromises).then(subFileNamesByDir => {
-                            subFileNamesByDir.forEach(subFileNames => { 
+                            subFileNamesByDir.forEach(subFileNames => {
                                 return fileNames.splice(fileNames.length, 0, ...subFileNames);
                             });
                         }).then(() => {
