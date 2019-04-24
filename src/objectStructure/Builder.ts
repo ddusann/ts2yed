@@ -58,7 +58,13 @@ import path from 'path';
 
 type FileName = string;
 
+interface IAlias {
+    from: string;
+    to: string;
+}
+
 export default class Builder {
+    private _aliases: IAlias[];
     private _directory: string;
     private _entityStore: Store;
     private _files: IParsedFile[];
@@ -67,6 +73,20 @@ export default class Builder {
         this._directory = path.isAbsolute(directory) ? directory : path.join(process.cwd(), directory);
         this._entityStore = new Store();
         this._files = [];
+        this._aliases = [];
+    }
+
+    addAlias(alias: string, realPath: string): void {
+        if (!path.isAbsolute(realPath)) {
+            throw new Error('Alias must have an absolute path!');
+        }
+
+        this._aliases.push({ from: alias, to: realPath });
+    }
+
+    getAlias(alias: string): string|undefined {
+        const storedObj = this._aliases.find(storedAlias => storedAlias.from === alias);
+        return storedObj ? storedObj.to : undefined;
     }
 
     async parse(): Promise<Folder> {
@@ -242,9 +262,17 @@ export default class Builder {
         const replacements: IReplacement[] = [];
         const parsedFile = this._files.find(file => file.fileName === fileName)!.file;
         parsedFile.getImports().forEach(imp => {
-            const importFileName = imp.getFileName();
+            let importFileName = imp.getFileName();
             if (importFileName[0] !== '.') {
-                return;
+                const alias = importFileName.split(path.sep)[0];
+                const aliasedPath = this.getAlias(alias);
+                if (!aliasedPath) {
+                    if (importFileName[0] === '@') {
+                        console.warn(`Path "${importFileName}" looks like an aliased path, but without real path set!`);
+                    }
+                    return;
+                }
+                importFileName = `${aliasedPath}${path.sep}${importFileName.substring(alias.length + 1)}`;
             }
 
             const importFilePath = this._getAbsolutePaths(path.dirname(fileName), [importFileName])[0];
@@ -393,6 +421,14 @@ export default class Builder {
 
     private _getAbsolutePaths(fileDirectory: string, paths: string[]): string[] {
         return paths.map(usedPath => {
+            const alias = usedPath.split(path.sep)[0];
+            const aliasedPath = this.getAlias(alias);
+            if (aliasedPath) {
+                usedPath = `${aliasedPath}${path.sep}${usedPath.substring(alias.length + 1)}`;
+            } else if (usedPath[0] === '@') {
+                console.warn(`Path "${usedPath}" looks like an aliased path, but without real path set!`);
+            }
+
             return this._getRealFileName(path.isAbsolute(usedPath) ? usedPath : path.join(fileDirectory, usedPath));
         }).filter((usedPath): usedPath is string => usedPath !== undefined);
     }
