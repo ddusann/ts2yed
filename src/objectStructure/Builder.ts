@@ -65,15 +65,21 @@ interface IAlias {
 
 export default class Builder {
     private _aliases: IAlias[];
-    private _directory: string;
+    private _path: string;
     private _entityStore: Store;
     private _files: IParsedFile[];
 
     constructor(directory: string) {
-        this._directory = path.isAbsolute(directory) ? directory : path.join(process.cwd(), directory);
         this._entityStore = new Store();
         this._files = [];
         this._aliases = [];
+
+        if (!fs.existsSync(directory)) {
+            this._path = '';
+            return;
+        }
+
+        this._path = path.isAbsolute(directory) ? directory : path.join(process.cwd(), directory);
     }
 
     addAlias(alias: string, realPath: string): void {
@@ -90,7 +96,11 @@ export default class Builder {
     }
 
     async parse(): Promise<Folder> {
-        const sourceFileList = await this._getFileList(this._directory);
+        if (this._path === '') {
+            return Promise.reject(new Error('Invalid path!'));
+        }
+
+        const sourceFileList = await this._getFileList(this._path);
         this._files = await new Parser(sourceFileList).getFiles();
         const tsFileList = new FileDependency();
         this._files.forEach(file => {
@@ -435,6 +445,10 @@ export default class Builder {
 
     private async _getFileList(directory: string): Promise<string[]> {
         return new Promise((resolve, reject) => {
+            if (fs.statSync(directory).isFile()) {
+                resolve([directory]);
+            }
+
             fs.readdir(directory, { withFileTypes: true }, (err, files) => {
                 if (err) {
                     reject(new Error(err.message));
