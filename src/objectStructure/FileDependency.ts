@@ -87,7 +87,7 @@ export default class FileDependency {
 
         const noChildNodes = this._treeFinalLeaves.map(leaf => leaf.name).join('\n    ');
 
-        return 'NO CHILD NODES:\n    ' 
+        return 'NO CHILD NODES:\n    '
             + noChildNodes
             + '\n\n'
             + items.join('\n----------------------------------------\n')
