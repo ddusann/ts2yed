@@ -12,12 +12,16 @@
   "dependencies": {
     "@types/lodash": "4.14.123",
     "@types/xmlbuilder": "0.0.34",
+    "command-line-args": "5.1.1",
+    "command-line-usage": "5.0.5",
     "lodash": "4.17.11",
     "ts-node": "8.0.3",
     "typescript": "3.3.3333",
     "xmlbuilder": "11.0.0"
   },
   "devDependencies": {
+    "@types/command-line-args": "5.0.0",
+    "@types/command-line-usage": "5.0.1",
     "jest": "24.5.0",
     "ts-jest": "24.0.0",
     "tslint": "5.13.1",
