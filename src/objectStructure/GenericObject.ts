@@ -61,6 +61,13 @@ export default abstract class GenericObject {
         this._usages.push(obj);
     }
 
+    clear(): void {
+        this._usages = [];
+        this._extensions = [];
+        this._implementations = [];
+        this._replacements = [];
+    }
+
     getExtensions(): GenericObject[] {
         return this._extensions;
     }

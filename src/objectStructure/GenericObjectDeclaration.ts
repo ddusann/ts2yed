@@ -45,6 +45,12 @@ export default class GenericObjectDeclaration extends GenericObject {
         this._methods.push(method);
     }
 
+    clear(): void {
+        super.clear();
+        this._attributes = [];
+        this._methods = [];
+    }
+
     getAttributes(): Property[] {
         return this._attributes;
     }

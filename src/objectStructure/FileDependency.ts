@@ -59,7 +59,11 @@ export default class FileDependency {
     }
 
     getFile(): string {
-        const file = this._getFile();
+        let file = this._getFile();
+        if (!file) {
+            file = this._getCycledDependencyFile();
+        }
+
         if (!file) {
             throw new Error('The file list is empty!');
         }
@@ -67,8 +71,27 @@ export default class FileDependency {
         return file;
     }
 
-    hasFile(): boolean {
-        return this._treeFinalLeaves.length > 0;
+    hasFile(fileName?: string): boolean {
+        return fileName ? this._allNodes.has(fileName) : this._allNodes.size > 0;
+    }
+
+    toString(): string {
+        const items: string[] = [];
+
+        this._allNodes.forEach((node, key) => {
+            const title = node.name;
+            const parents = node.parents.map(parent => parent.name).join('\n        ');
+            const children = node.leaves.map(leaf => leaf.name).join('\n        ');
+            items.push(title + '\n    PARENTS:\n        ' + parents + '\n    CHILDREN:\n        ' + children + '\n');
+        });
+
+        const noChildNodes = this._treeFinalLeaves.map(leaf => leaf.name).join('\n    ');
+
+        return 'NO CHILD NODES:\n    ' 
+            + noChildNodes
+            + '\n\n'
+            + items.join('\n----------------------------------------\n')
+            + '========================================\n\n';
     }
 
     private _addDependency(sourceFileNode: IFileNode, dependency: string): void {
@@ -92,6 +115,34 @@ export default class FileDependency {
         this._moveFinalLeafPropertyIfPossible(sourceFileNode, dependencyNode);
     }
 
+    private _getCycledDependencyFile(): string {
+        const allNodes = Array.from(this._allNodes.keys());
+        const cycledNodeOwnerPath = allNodes.find(nodePath => {
+            const node = this._allNodes.get(nodePath)!;
+            const leafIndex = node.leaves.findIndex(leafNode => {
+                return node.parents.map(parentNode => parentNode.name).includes(leafNode.name);
+            });
+            return leafIndex !== -1;
+        });
+
+        if (!cycledNodeOwnerPath) {
+            throw new Error('No cycled dependency found');
+        }
+
+        const cycledNodeOwner = this._allNodes.get(cycledNodeOwnerPath)!;
+        const cycledNode = cycledNodeOwner.leaves.find(leafNode => {
+            return cycledNodeOwner.parents.map(parentNode => parentNode.name).includes(leafNode.name);
+        })!;
+
+        cycledNodeOwner.parents.splice(cycledNodeOwner.parents.indexOf(cycledNode), 1);
+        cycledNode.leaves.splice(cycledNode.leaves.indexOf(cycledNodeOwner), 1);
+        if (cycledNode.leaves.length === 0) {
+            this._treeFinalLeaves.push(cycledNode);
+        }
+
+        return cycledNodeOwner.name;
+    }
+
     private _getFile(): string|undefined {
         const finalLeaf = this._treeFinalLeaves.pop();
         if (!finalLeaf) {
@@ -108,6 +159,8 @@ export default class FileDependency {
         finalLeaf.parents
             .filter(parent => parent.leaves.length === 0)
             .forEach(parent => this._treeFinalLeaves.push(parent));
+
+        this._allNodes.delete(finalLeaf.name);
 
         return finalLeaf.name;
     }

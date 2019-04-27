@@ -89,6 +89,10 @@ export default class Store {
         return new Folder(filteredEntities);
     }
 
+    has(fileName: FileName, entityName: string): boolean {
+        return this._entities.has(fileName) && this._entities.get(fileName)!.has(entityName);
+    }
+
     put(fileName: FileName, entityName: string, entity: GenericObject): void {
         this._put(fileName, entityName, entity, false);
     }

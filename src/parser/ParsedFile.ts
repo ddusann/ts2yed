@@ -34,6 +34,11 @@ import TypeDefinition from './TypeDefinition';
 
 export type FileEntity = Class|Enum|FunctionDefinition|Import|Interface|TypeDefinition;
 
+export interface IExport {
+    exportInstance: Export;
+    exportType: Type|undefined;
+}
+
 export default class ParsedFile {
     private _aliases: Map<string, string>;
     private _classes: Class[];

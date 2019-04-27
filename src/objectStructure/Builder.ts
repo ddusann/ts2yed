@@ -33,7 +33,7 @@ import FileDependency from './FileDependency';
 import { FileEntity } from '../parser/ParsedFile';
 import FileEntityDependency from './FileEntityDependency';
 import Folder from './Folder';
-import Function from './Function';
+import FunctionObject from './Function';
 import GenericObject from './GenericObject';
 import GenericObjectDeclaration from './GenericObjectDeclaration';
 import Getter from '../parser/Getter';
@@ -119,7 +119,13 @@ export default class Builder {
                 continue;
             }
 
-            const replacements = this._addImportsIntoStore(fileName);
+            let replacements: IReplacement[] = [];
+            if (!tsFileList.hasFile(fileName)) {
+                replacements = this._addImportsIntoStore(fileName);
+            } else {
+                // in this case this file has cycled dependencies and will be parsed once more
+            }
+
             const fileEntityDependencies = new FileEntityDependency(parsedFile.file);
             while (fileEntityDependencies.hasSymbols()) {
                 const fileEntitySymbol = fileEntityDependencies.getSymbol();
@@ -161,8 +167,14 @@ export default class Builder {
     }
 
     private _addClass(fileName: FileName, parsedClass: ParsedClass, replacements: IReplacement[] = []): void {
-        const newClass = new Class(this._getNameWithTypeParameters(parsedClass), parsedClass.isAbstract());
-        this._entityStore.put(fileName, parsedClass.getName(), newClass);
+        let newClass: Class;
+        if (this._entityStore.has(fileName, parsedClass.getName())) {
+            newClass = this._entityStore.get(fileName, parsedClass.getName()) as Class;
+            newClass.clear();
+        } else {
+            newClass = new Class(this._getNameWithTypeParameters(parsedClass), parsedClass.isAbstract());
+            this._entityStore.put(fileName, parsedClass.getName(), newClass);
+        }
 
         replacements = this._removeOverlappedReplacements(parsedClass.getTypeParameters(), replacements);
 
@@ -208,8 +220,14 @@ export default class Builder {
     }
 
     private _addEnum(fileName: FileName, parsedEnum: ParsedEnum): void {
-        const newEnum = new Enum(parsedEnum.getName());
-        this._entityStore.put(fileName, parsedEnum.getName(), newEnum);
+        let newEnum: Enum;
+        if (this._entityStore.has(fileName, parsedEnum.getName())) {
+            newEnum = this._entityStore.get(fileName, parsedEnum.getName()) as Enum;
+            newEnum.clear();
+        } else {
+            newEnum = newEnum = new Enum(parsedEnum.getName());
+            this._entityStore.put(fileName, parsedEnum.getName(), newEnum);
+        }
 
         parsedEnum.getValues().forEach(value => newEnum.addValue(value));
     }
@@ -226,16 +244,22 @@ export default class Builder {
     }
 
     private _addFunction(fileName: FileName, parsedFunc: ParserFunction, replacements: IReplacement[] = []): void {
-        const parameters = parsedFunc.getParameters().map<IParameter>(parameter => ({
-            name: parameter.getName(),
-            type: parameter.getType().getTypeName(replacements, false)
-        }));
-        const typeParameters = parsedFunc.getTypeParameters().map(parameter => {
-            return parameter.getTypeName(replacements, false);
-        });
-        const type = parsedFunc.getType().getTypeName(replacements, false);
-        const newFunction = new Function(parsedFunc.getName(), parameters, typeParameters, type);
-        this._entityStore.put(fileName, parsedFunc.getName(), newFunction);
+        let newFunction: FunctionObject;
+        if (this._entityStore.has(fileName, parsedFunc.getName())) {
+            newFunction = this._entityStore.get(fileName, parsedFunc.getName()) as FunctionObject;
+            newFunction.clear();
+        } else {
+            const parameters = parsedFunc.getParameters().map<IParameter>(parameter => ({
+                name: parameter.getName(),
+                type: parameter.getType().getTypeName(replacements, false)
+            }));
+            const typeParameters = parsedFunc.getTypeParameters().map(parameter => {
+                return parameter.getTypeName(replacements, false);
+            });
+            const type = parsedFunc.getType().getTypeName(replacements, false);
+            newFunction = new FunctionObject(parsedFunc.getName(), parameters, typeParameters, type);
+            this._entityStore.put(fileName, parsedFunc.getName(), newFunction);
+        }
 
         this._addUsages(parsedFunc.getUsages(), newFunction, fileName);
     }
@@ -330,8 +354,14 @@ export default class Builder {
     }
 
     private _addInterface(fileName: FileName, parsedIfc: ParsedInterface, replacements: IReplacement[] = []): void {
-        const newIfc = new Interface(this._getNameWithTypeParameters(parsedIfc));
-        this._entityStore.put(fileName, parsedIfc.getName(), newIfc);
+        let newIfc: Interface;
+        if (this._entityStore.has(fileName, parsedIfc.getName())) {
+            newIfc = this._entityStore.get(fileName, parsedIfc.getName()) as Interface;
+            newIfc.clear();
+        } else {
+            newIfc = newIfc = new Interface(this._getNameWithTypeParameters(parsedIfc));
+            this._entityStore.put(fileName, parsedIfc.getName(), newIfc);
+        }
 
         replacements = this._removeOverlappedReplacements(parsedIfc.getTypeParameters(), replacements);
 
@@ -403,13 +433,20 @@ export default class Builder {
     }
 
     private _addTypeDefinition(fileName: FileName, parsedType: TypeDefinition, replacements: IReplacement[]): void {
-        replacements = this._removeOverlappedReplacements(parsedType.getTypeParameters(), replacements);
-        const typeAlias = parsedType.getType().getTypeName(replacements, false);
-        const name = this._getNameWithTypeParameters(parsedType);
-        const newTypeAlias = new TypeAlias(name, typeAlias);
+        let newTypeAlias: TypeAlias;
+        if (this._entityStore.has(fileName, parsedType.getName())) {
+            newTypeAlias = this._entityStore.get(fileName, parsedType.getName()) as TypeAlias;
+            newTypeAlias.clear();
+        } else {
+            replacements = this._removeOverlappedReplacements(parsedType.getTypeParameters(), replacements);
+            const typeAlias = parsedType.getType().getTypeName(replacements, false);
+            const name = this._getNameWithTypeParameters(parsedType);
+
+            newTypeAlias = new TypeAlias(name, typeAlias);
+            this._entityStore.put(fileName, parsedType.getName(), newTypeAlias);
+        }
 
         this._addUsages(parsedType.getUsages(), newTypeAlias, fileName);
-        this._entityStore.put(fileName, parsedType.getName(), newTypeAlias);
     }
 
     private _addUsages(usages: ReferenceType[], obj: GenericObject, fileName: FileName): void {
