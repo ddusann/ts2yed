@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 Dušan Kováčik
+ * Copyright (c) 2019-2020 Dušan Kováčik
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -66,10 +66,11 @@ interface IAlias {
 export default class Builder {
     private _aliases: IAlias[];
     private _entityStore: Store;
+    private _excludedExtensions: string[];
     private _files: IParsedFile[];
     private _paths: string[];
 
-    constructor(paths: string|string[]) {
+    constructor(paths: string|string[], excludedExtensions: string[]) {
         if (!Array.isArray(paths)) {
             paths = [paths];
         }
@@ -77,6 +78,7 @@ export default class Builder {
         this._entityStore = new Store();
         this._files = [];
         this._aliases = [];
+        this._excludedExtensions = excludedExtensions;
 
         this._paths = paths
             .filter(userPath => fs.existsSync(userPath))
@@ -519,7 +521,9 @@ export default class Builder {
                             .map(file => path.join(result.filePath, file.name));
                         const fileNames = files
                             .filter(file => file.isFile() && path.extname(file.name) === '.ts')
-                            .map(file => path.join(result.filePath, file.name));
+                            .filter(file => !this._excludedExtensions
+                                .some(extension => path.basename(file.name).endsWith(extension))
+                            ).map(file => path.join(result.filePath, file.name));
                         const subFileNamePromises = dirNames.map(subDirectory => this._getFileList([subDirectory]));
 
                         Promise.all(subFileNamePromises).then(subFileNamesByDir => {

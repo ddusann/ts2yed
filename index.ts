@@ -11,6 +11,10 @@ const parseArguments = () => {
         type: String,
         multiple: true
     }, {
+        name: 'excludeExtension',
+        type: String,
+        lazyMultiple: true
+    }, {
         name: 'include',
         type: String,
         lazyMultiple: true
@@ -42,6 +46,10 @@ const printHelp = () => {
             name: 'alias',
             typeLabel: '{underline @alias=path}',
             description: 'Set an alias to be replaced with an absolute path.'
+        }, {
+            name: 'excludeExtension',
+            typeLabel: '{underline extension}',
+            description: 'Exclude files with specified file name ending.'
         }, {
             name: 'include',
             typeLabel: '{underline path}',
@@ -79,7 +87,7 @@ if (options.help) {
     console.log('You have to specify path to the output file.');
     printHelp();
 } else {
-    const builder = new ObjectBuilder(files);
+    const builder = new ObjectBuilder(files, options.excludeExtension || []);
     aliases.forEach(alias => {
         const [aliasName, aliasPath] = alias.split('=');
         builder.addAlias(aliasName, aliasPath);
