@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 Dušan Kováčik
+ * Copyright (c) 2019-2020 Dušan Kováčik
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -61,7 +61,7 @@ export default class FileDependency {
     getFile(): string {
         let file = this._getFile();
         if (!file) {
-            file = this._getCycledDependencyFile();
+            file = this._printCycleDependencyError();
         }
 
         if (!file) {
@@ -115,32 +115,61 @@ export default class FileDependency {
         this._moveFinalLeafPropertyIfPossible(sourceFileNode, dependencyNode);
     }
 
-    private _getCycledDependencyFile(): string {
-        const allNodes = Array.from(this._allNodes.keys());
-        const cycledNodeOwnerPath = allNodes.find(nodePath => {
+    private _findDependency(): IFileNode[]|undefined {
+        const allNodePaths = Array.from(this._allNodes.keys());
+        let dependency: IFileNode[]|undefined;
+
+        allNodePaths.find(nodePath => {
             const node = this._allNodes.get(nodePath)!;
-            const leafIndex = node.leaves.findIndex(leafNode => {
-                return node.parents.map(parentNode => parentNode.name).includes(leafNode.name);
-            });
-            return leafIndex !== -1;
+            const passedChildren: IFileNode[] = [];
+            const passedChildrenWithPosition: [IFileNode, number][] = [];
+            let currentNode = node;
+            let currentNodeLeafPosition = 0;
+            let found = false;
+            while (true) {
+                // dependency check
+                if (passedChildren.includes(currentNode)) {
+                    found = true;
+                    dependency = passedChildren.slice(passedChildren.indexOf(currentNode));
+                    dependency.push(currentNode);
+                    break;
+                }
+
+                // there are some children which need to be checked
+                if (currentNode.leaves.length > currentNodeLeafPosition) {
+                    passedChildren.push(currentNode);
+                    passedChildrenWithPosition.push([currentNode, currentNodeLeafPosition]);
+                    currentNode = currentNode.leaves[currentNodeLeafPosition];
+                    currentNodeLeafPosition = 0;
+
+                    continue;
+                }
+
+                // there are no more children, go back
+                while (passedChildrenWithPosition.length > 0) {
+                    [currentNode, currentNodeLeafPosition] = passedChildrenWithPosition.pop()!;
+                    passedChildren.pop();
+                    ++ currentNodeLeafPosition;
+
+                    if (currentNode.leaves.length === currentNodeLeafPosition) {
+                        continue;
+                    }
+
+                    passedChildren.push(currentNode);
+                    passedChildrenWithPosition.push([currentNode, currentNodeLeafPosition]);
+                    currentNode = currentNode.leaves[currentNodeLeafPosition];
+                    currentNodeLeafPosition = 0;
+                }
+
+                if (passedChildrenWithPosition.length === 0 && currentNode.leaves.length === currentNodeLeafPosition) {
+                    break;
+                }
+            }
+
+            return found;
         });
 
-        if (!cycledNodeOwnerPath) {
-            throw new Error('No cycled dependency found');
-        }
-
-        const cycledNodeOwner = this._allNodes.get(cycledNodeOwnerPath)!;
-        const cycledNode = cycledNodeOwner.leaves.find(leafNode => {
-            return cycledNodeOwner.parents.map(parentNode => parentNode.name).includes(leafNode.name);
-        })!;
-
-        cycledNodeOwner.parents.splice(cycledNodeOwner.parents.indexOf(cycledNode), 1);
-        cycledNode.leaves.splice(cycledNode.leaves.indexOf(cycledNodeOwner), 1);
-        if (cycledNode.leaves.length === 0) {
-            this._treeFinalLeaves.push(cycledNode);
-        }
-
-        return cycledNodeOwner.name;
+        return dependency;
     }
 
     private _getFile(): string|undefined {
@@ -175,5 +204,16 @@ export default class FileDependency {
         if (to.leaves.length === 0 && !this._treeFinalLeaves.includes(to)) {
             this._treeFinalLeaves.push(to);
         }
+    }
+
+    private _printCycleDependencyError(): never {
+        const cycle = this._findDependency();
+        if (!cycle) {
+            throw new Error('Unknown cycle dependency detected!');
+        }
+
+        console.log('Found cycled dependencies:');
+        cycle.forEach(node => console.log('  =>', node.name));
+        throw new Error('The dependencies must not be cycled!');
     }
 }

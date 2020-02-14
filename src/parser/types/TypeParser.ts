@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 Dušan Kováčik
+ * Copyright (c) 2019-2020 Dušan Kováčik
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -23,33 +23,34 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import AnyObjectType from './AnyObjectType';
 import AnyType from './AnyType';
 import ArrayType from './ArrayType';
 import Attribute from '../Attribute';
-import { IKeyName } from '../Member';
 import BooleanType from './BooleanType';
 import ConditionType from './ConditionType';
+import ConstructorFunctionType from './ConstructorFunctionType';
 import FunctionType from './FunctionType';
+import { IKeyName } from '../Member';
 import IntersectionType from './IntersectionType';
 import IsType from './IsType';
 import ModifierType from '../IModifier';
 import NullType from './NullType';
 import NumberType from './NumberType';
 import ObjectType from './ObjectType';
+import OptionalType from './OptionalType';
 import Parameter from '../Parameter';
 import ParenthesizedType from './ParenthesizedType';
 import ReferenceType from './ReferenceType';
 import StringLiteralType from './StringLiteralType';
 import StringType from './StringType';
+import TupleType from './TupleType';
 import Type from './Type';
 import TypeOfType from './TypeOfType';
 import UndefinedType from './UndefinedType';
 import UnionType from './UnionType';
 import VoidType from './VoidType';
 import ts from 'typescript';
-import AnyObjectType from './AnyObjectType';
-import TupleType from './TupleType';
-import OptionalType from './OptionalType';
 
 export default abstract class TypeParser {
     static isExpressionNode(node: any): boolean {
@@ -129,6 +130,11 @@ export default abstract class TypeParser {
             case ts.SyntaxKind.ObjectKeyword: return new AnyObjectType();
             case ts.SyntaxKind.TupleType: return TypeParser._parseTuple(node);
             case ts.SyntaxKind.OptionalType: return new OptionalType(TypeParser.parse(node.type));
+            case ts.SyntaxKind.ConstructorType: return new ConstructorFunctionType(
+                TypeParser._parseParameters(node),
+                TypeParser.parse(node.type),
+                TypeParser._parseTypeParameters(node)
+            );
             default: throw new Error('Unknown type!');
         }
     }

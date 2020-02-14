@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 Dušan Kováčik
+ * Copyright (c) 2019-2020 Dušan Kováčik
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -45,7 +45,8 @@ export enum TypeCategory {
     ANY,
     ANY_OBJECT,
     TUPLE,
-    OPTIONAL
+    OPTIONAL,
+    CONSTRUCTOR_FUNCTION
 }
 
 export interface IReplacement {
