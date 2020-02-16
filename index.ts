@@ -33,6 +33,10 @@ const parseArguments = () => {
         name: 'strict',
         type: Boolean,
         defaultValue: false
+    }, {
+        name: 'classNamesOnly',
+        type: Boolean,
+        defaultValue: false
     }]);
 };
 
@@ -61,6 +65,9 @@ const printHelp = () => {
         }, {
             name: 'withPrivate',
             description: 'Put private members into the UML.'
+        }, {
+            name: 'classNamesOnly',
+            description: 'Render class objects without any members.'
         }, {
             name: 'help',
             description: 'Print this usage guide.'
@@ -93,7 +100,9 @@ if (options.help) {
         builder.addAlias(aliasName, aliasPath);
     });
 
-    Settings.getSettings().setHidePrivateMembers(!options.withPrivate);
+    const settings = Settings.getSettings();
+    settings.setHidePrivateMembers(!options.withPrivate);
+    settings.setClassNamesOnly(options.classNamesOnly);
 
     builder.parse().then(folder => {
         const graphBuilder = new GraphBuilder(folder);

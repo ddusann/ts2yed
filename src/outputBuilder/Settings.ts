@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 Dušan Kováčik
+ * Copyright (c) 2019-2020 Dušan Kováčik
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -34,12 +34,18 @@ export default class Settings {
         return Settings._settings;
     }
 
+    private _classNamesOnly: boolean;
     private _fontFamily: string;
     private _hidePrivateMembers: boolean;
 
     private constructor() {
+        this._classNamesOnly = false;
         this._hidePrivateMembers = true;
         this._fontFamily = 'FreeMono';
+    }
+
+    getClassNamesOnly(): boolean {
+        return this._classNamesOnly;
     }
 
     getFontFamily(): string {
@@ -48,6 +54,10 @@ export default class Settings {
 
     getHidePrivateMembers(): boolean {
         return this._hidePrivateMembers;
+    }
+
+    setClassNamesOnly(classNamesOnly: boolean): void {
+        this._classNamesOnly = classNamesOnly;
     }
 
     setFontFamily(font: string): void {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 Dušan Kováčik
+ * Copyright (c) 2019-2020 Dušan Kováčik
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -92,34 +92,36 @@ export default class Builder {
         const node = new ClassNode(cls.getName(), cls.getStereotype());
         const settings = Settings.getSettings();
 
-        cls.getAttributes()
-            .forEach(attribute => {
-                if (settings.getHidePrivateMembers() && attribute.getVisibility() === VisibilityType.PRIVATE) {
+        if (!settings.getClassNamesOnly()) {
+            cls.getAttributes()
+                .forEach(attribute => {
+                    if (settings.getHidePrivateMembers() && attribute.getVisibility() === VisibilityType.PRIVATE) {
+                        return;
+                    }
+
+                    return node.addAttribute(new Property(
+                        attribute.getName(),
+                        attribute.getVisibility(),
+                        attribute.getType()
+                    ));
+                });
+
+            cls.getMethods().forEach(method => {
+                if (settings.getHidePrivateMembers() && method.getVisibility() === VisibilityType.PRIVATE) {
                     return;
                 }
 
-                return node.addAttribute(new Property(
-                    attribute.getName(),
-                    attribute.getVisibility(),
-                    attribute.getType()
+                const parameters = method.getParameters()
+                    .map(parameter => `${parameter.name}: ${parameter.type}`)
+                    .join(', ');
+
+                node.addMethod(
+                    new Property(`${method.getName()}(${parameters})`,
+                    method.getVisibility(),
+                    method.getType()
                 ));
             });
-
-        cls.getMethods().forEach(method => {
-            if (settings.getHidePrivateMembers() && method.getVisibility() === VisibilityType.PRIVATE) {
-                return;
-            }
-
-            const parameters = method.getParameters()
-                .map(parameter => `${parameter.name}: ${parameter.type}`)
-                .join(', ');
-
-            node.addMethod(
-                new Property(`${method.getName()}(${parameters})`,
-                method.getVisibility(),
-                method.getType()
-            ));
-        });
+        }
 
         return node;
     }
@@ -194,26 +196,29 @@ export default class Builder {
 
     private _createInterfaceGraphNode(ifc: Interface): ClassNode {
         const node = new ClassNode(ifc.getName(), ifc.getStereotype());
+        const settings = Settings.getSettings();
 
-        ifc.getAttributes().forEach(attribute =>
-            node.addAttribute(new Property(
-                attribute.getName(),
-                attribute.getVisibility(),
-                attribute.getType()
-            ))
-        );
+        if (!settings.getClassNamesOnly()) {
+            ifc.getAttributes().forEach(attribute =>
+                node.addAttribute(new Property(
+                    attribute.getName(),
+                    attribute.getVisibility(),
+                    attribute.getType()
+                ))
+            );
 
-        ifc.getMethods().forEach(method => {
-            const parameters = method.getParameters()
-                .map(parameter => `${parameter.name}: ${parameter.type}`)
-                .join(', ');
+            ifc.getMethods().forEach(method => {
+                const parameters = method.getParameters()
+                    .map(parameter => `${parameter.name}: ${parameter.type}`)
+                    .join(', ');
 
-            node.addMethod(
-                new Property(`${method.getName()}(${parameters})`,
-                method.getVisibility(),
-                method.getType()
-            ));
-        });
+                node.addMethod(
+                    new Property(`${method.getName()}(${parameters})`,
+                    method.getVisibility(),
+                    method.getType()
+                ));
+            });
+        }
 
         return node;
     }
