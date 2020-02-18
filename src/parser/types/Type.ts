@@ -46,7 +46,8 @@ export enum TypeCategory {
     ANY_OBJECT,
     TUPLE,
     OPTIONAL,
-    CONSTRUCTOR_FUNCTION
+    CONSTRUCTOR_FUNCTION,
+    SYMBOL
 }
 
 export interface IReplacement {

@@ -44,6 +44,7 @@ import ParenthesizedType from './ParenthesizedType';
 import ReferenceType from './ReferenceType';
 import StringLiteralType from './StringLiteralType';
 import StringType from './StringType';
+import SymbolType from './SymbolType';
 import TupleType from './TupleType';
 import Type from './Type';
 import TypeOfType from './TypeOfType';
@@ -135,6 +136,7 @@ export default abstract class TypeParser {
                 TypeParser.parse(node.type),
                 TypeParser._parseTypeParameters(node)
             );
+            case ts.SyntaxKind.SymbolKeyword: return new SymbolType();
             default: throw new Error('Unknown type!');
         }
     }
